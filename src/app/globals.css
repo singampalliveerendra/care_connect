@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+@theme {
+  /* Warm, calm palette — trust without clinical coldness. */
+  --color-ground: #fbfaf7;
+  --color-surface: #ffffff;
+  --color-surface-alt: #f2f1ec;
+  --color-line: #e3e1d9;
+  --color-line-soft: #ecebe4;
+
+  --color-ink: #1b201c;
+  --color-ink-soft: #545c54;
+  --color-ink-faint: #7d857c;
+
+  --color-brand-50: #eaf2ee;
+  --color-brand-100: #d3e5dc;
+  --color-brand-500: #2f7d62;
+  --color-brand-600: #1f6650;
+  --color-brand-700: #164e3d;
+  --color-brand-900: #0d2f25;
+
+  --color-accent-500: #b8762a;
+  --color-accent-100: #f6ecdc;
+
+  --color-danger-500: #a33d20;
+  --color-danger-100: #f7e7e1;
+
+  --font-display: var(--font-newsreader), Georgia, serif;
+  --font-sans: var(--font-public-sans), ui-sans-serif, system-ui, sans-serif;
+
+  --radius-card: 0.5rem;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    background-color: var(--color-ground);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-brand-600);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
