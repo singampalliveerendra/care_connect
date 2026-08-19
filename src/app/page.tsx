@@ -15,6 +15,7 @@ import {
   ShieldCheck,
   Users,
 } from "@/components/icons";
+import { ScopeDisclaimer } from "@/components/scope-disclaimer";
 import { SearchBar } from "@/components/search-bar";
 import { VERIFICATION } from "@/lib/domain";
 import { getCities, getCityProviderCounts, getServiceCatalogue, getServices } from "@/lib/queries";
@@ -180,6 +181,12 @@ export default async function HomePage() {
             </li>
           ))}
         </ol>
+
+        {/* Stating the limits right after the three steps, while the family is
+            still forming a model of what this product is. Discovering the
+            boundary later — after sending a request — costs more trust than
+            naming it here. */}
+        <ScopeDisclaimer className="mt-14" />
       </section>
 
       {/* ---------------------------------------------------------- cities */}

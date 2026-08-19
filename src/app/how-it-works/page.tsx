@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { ScopeDisclaimer } from "@/components/scope-disclaimer";
+
 export const metadata: Metadata = {
   title: "How CareConnect works",
   description:
@@ -54,15 +56,7 @@ export default function HowItWorksPage() {
         ))}
       </ol>
 
-      <section className="mt-14 rounded-card border border-line bg-surface p-6">
-        <h2 className="text-xl">What we don&rsquo;t do</h2>
-        <ul className="mt-3 space-y-2 text-ink-soft">
-          <li>We don&rsquo;t book or schedule care for you.</li>
-          <li>We don&rsquo;t take payment for care services.</li>
-          <li>We don&rsquo;t supervise or guarantee the care a provider delivers.</li>
-          <li>We don&rsquo;t give medical advice.</li>
-        </ul>
-      </section>
+      <ScopeDisclaimer className="mt-14" />
 
       <p className="mt-10">
         <Link
