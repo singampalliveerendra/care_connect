@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { Logomark } from "@/components/icons";
+
 const columns = [
   {
     title: "Find care",
@@ -27,13 +29,25 @@ const columns = [
   },
 ];
 
+/**
+ * No top margin here on purpose: pages own their own bottom spacing, and
+ * full-bleed closing bands (the homepage provider CTA, for one) need to sit
+ * flush against the footer rather than floating above it.
+ */
 export function SiteFooter() {
   return (
-    <footer className="mt-20 border-t border-line bg-surface-alt">
-      <div className="mx-auto grid max-w-6xl gap-10 px-5 py-12 sm:grid-cols-2 lg:grid-cols-4">
+    <footer className="border-t border-line bg-surface-alt">
+      <div className="mx-auto grid max-w-6xl gap-10 px-5 py-14 sm:grid-cols-2 lg:grid-cols-4">
         <div>
-          <p className="font-display text-lg text-brand-700">CareConnect India</p>
-          <p className="mt-2 max-w-xs text-sm text-ink-soft">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2.5 text-brand-700"
+            aria-label="CareConnect India — home"
+          >
+            <Logomark className="size-8" />
+            <span className="font-display text-lg leading-none">CareConnect India</span>
+          </Link>
+          <p className="mt-4 max-w-xs text-sm leading-relaxed text-ink-soft">
             Your parents are in India. Their care doesn&rsquo;t have to be.
           </p>
         </div>
@@ -43,7 +57,7 @@ export function SiteFooter() {
             <h2 className="font-sans text-xs font-semibold uppercase tracking-widest text-ink-faint">
               {column.title}
             </h2>
-            <ul className="mt-3 space-y-2 text-sm">
+            <ul className="mt-4 space-y-2.5 text-sm">
               {column.links.map((link) => (
                 <li key={link.href}>
                   <Link
@@ -60,10 +74,14 @@ export function SiteFooter() {
       </div>
 
       <div className="border-t border-line">
-        <p className="mx-auto max-w-6xl px-5 py-5 text-xs text-ink-faint">
-          CareConnect helps families discover and contact care providers. We are not a
-          care provider ourselves, and we do not supervise the care that providers deliver.
-        </p>
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-5 py-6 text-xs text-ink-faint">
+          <p className="max-w-2xl leading-relaxed">
+            CareConnect helps families discover and contact care providers. We are not a
+            care provider ourselves, and we do not supervise the care that providers
+            deliver.
+          </p>
+          <p>&copy; {new Date().getFullYear()} CareConnect India</p>
+        </div>
       </div>
     </footer>
   );

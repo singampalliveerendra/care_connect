@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { EnquiryForm } from "@/components/enquiry-form";
+import { CareRequestPanel } from "@/components/care-request-panel";
 import { VerificationBadge } from "@/components/verification-badge";
 import { PRICING_BAND_LABEL, VERIFICATION } from "@/lib/domain";
 import { getProviderBySlug, getIndexableProviderSlugs } from "@/lib/queries";
@@ -190,46 +190,19 @@ export default async function ProviderPage({ params }: PageProps) {
             </section>
           </div>
 
-          {facts.length > 0 && (
-            <aside className="h-fit rounded-card border border-line bg-surface p-5">
-              <h2 className="font-sans text-xs font-semibold uppercase tracking-widest text-ink-faint">
-                At a glance
-              </h2>
-              <dl className="mt-4 space-y-3 text-sm">
-                {facts.map((fact) => (
-                  <div key={fact.label}>
-                    <dt className="text-ink-faint">{fact.label}</dt>
-                    <dd className="mt-0.5">{fact.value}</dd>
-                  </div>
-                ))}
-              </dl>
-            </aside>
-          )}
+          <CareRequestPanel
+            providerId={provider.id}
+            providerName={provider.name}
+            cityId={provider.city_id}
+            cityName={provider.city.name}
+            services={provider.services}
+            areas={provider.areas_covered}
+            languages={provider.languages}
+            facts={facts}
+            verified={verification.showBadge}
+          />
         </div>
 
-        <section id="enquire" className="scroll-mt-6 border-t border-line pt-10">
-          <h2 className="text-2xl">Send a care request</h2>
-          <p className="mt-2 max-w-prose text-ink-soft">
-            Tell {provider.name} what you need. The more you share, the more useful their
-            reply will be. Only your name, phone number and the care needed are required.
-          </p>
-          <p className="mt-2 max-w-prose text-sm text-ink-faint">
-            Please don&rsquo;t include detailed medical records here &mdash; we only collect
-            what a provider needs to respond.
-          </p>
-
-          <div className="mt-8">
-            <EnquiryForm
-              providerId={provider.id}
-              providerName={provider.name}
-              cityId={provider.city_id}
-              cityName={provider.city.name}
-              services={provider.services}
-              areas={provider.areas_covered}
-              languages={provider.languages}
-            />
-          </div>
-        </section>
       </div>
     </>
   );

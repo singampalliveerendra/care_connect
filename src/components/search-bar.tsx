@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { MapPin, Search, Sparkle } from "@/components/icons";
 import type { City, Service } from "@/lib/database.types";
 
 export function SearchBar({
@@ -31,50 +32,58 @@ export function SearchBar({
   return (
     <form
       onSubmit={submit}
-      className="flex flex-col gap-3 rounded-card border border-line bg-surface p-4 shadow-sm sm:flex-row sm:items-end"
+      className="rounded-panel border border-line bg-surface p-2 shadow-float"
     >
-      <label className="flex-1">
-        <span className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-ink-faint">
-          City
-        </span>
-        <select
-          value={city}
-          onChange={(event) => setCity(event.target.value)}
-          className="w-full rounded-card border border-line bg-surface px-3 py-2.5 text-ink"
-        >
-          <option value="">All active cities</option>
-          {cities.map((option) => (
-            <option key={option.id} value={option.slug}>
-              {option.name}
-            </option>
-          ))}
-        </select>
-      </label>
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-stretch">
+        <label className="flex flex-1 items-center gap-3 rounded-card px-3 py-2 transition-colors focus-within:bg-brand-50 sm:py-1.5">
+          <MapPin className="size-5 shrink-0 text-brand-500" />
+          <span className="min-w-0 flex-1">
+            <span className="block text-xs font-medium uppercase tracking-wide text-ink-faint">
+              City
+            </span>
+            <select
+              value={city}
+              onChange={(event) => setCity(event.target.value)}
+              className="-ms-1 w-full cursor-pointer appearance-none bg-transparent px-1 py-0.5 font-medium text-ink focus:outline-none"
+            >
+              <option value="">All active cities</option>
+              {cities.map((option) => (
+                <option key={option.id} value={option.slug}>
+                  {option.name}
+                </option>
+              ))}
+            </select>
+          </span>
+        </label>
 
-      <label className="flex-1">
-        <span className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-ink-faint">
-          Type of care
-        </span>
-        <select
-          value={service}
-          onChange={(event) => setService(event.target.value)}
-          className="w-full rounded-card border border-line bg-surface px-3 py-2.5 text-ink"
-        >
-          <option value="">Any service</option>
-          {services.map((option) => (
-            <option key={option.id} value={option.slug}>
-              {option.name}
-            </option>
-          ))}
-        </select>
-      </label>
+        <span aria-hidden="true" className="hidden w-px bg-line-soft sm:block" />
 
-      <button
-        type="submit"
-        className="rounded-card bg-brand-600 px-6 py-2.5 font-medium text-white transition-colors hover:bg-brand-700"
-      >
-        Find care
-      </button>
+        <label className="flex flex-1 items-center gap-3 rounded-card px-3 py-2 transition-colors focus-within:bg-brand-50 sm:py-1.5">
+          <Sparkle className="size-5 shrink-0 text-brand-500" />
+          <span className="min-w-0 flex-1">
+            <span className="block text-xs font-medium uppercase tracking-wide text-ink-faint">
+              Type of care
+            </span>
+            <select
+              value={service}
+              onChange={(event) => setService(event.target.value)}
+              className="-ms-1 w-full cursor-pointer appearance-none bg-transparent px-1 py-0.5 font-medium text-ink focus:outline-none"
+            >
+              <option value="">Any service</option>
+              {services.map((option) => (
+                <option key={option.id} value={option.slug}>
+                  {option.name}
+                </option>
+              ))}
+            </select>
+          </span>
+        </label>
+
+        <button type="submit" className="btn btn-primary px-6 sm:px-7">
+          <Search className="size-4.5" />
+          Find care
+        </button>
+      </div>
     </form>
   );
 }

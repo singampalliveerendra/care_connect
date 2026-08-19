@@ -1,74 +1,126 @@
 import Link from "next/link";
 
+import { ArrowRight, Calendar, Globe, MapPin, Rupee } from "@/components/icons";
 import { VerificationBadge } from "@/components/verification-badge";
 import { PRICING_BAND_LABEL } from "@/lib/domain";
 import type { ProviderWithRelations } from "@/lib/queries";
 
+/** Monogram for the avatar tile — providers have no logos in the MVP, and an
+ *  empty grey square looks broken where a face or logo would normally sit. */
+function initials(name: string) {
+  return name
+    .replace(/[^\p{L}\p{N} ]/gu, "")
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((word) => word[0]!.toUpperCase())
+    .join("");
+}
+
 export function ProviderCard({ provider }: { provider: ProviderWithRelations }) {
-  const highlighted = provider.tier === "premium";
+  const promoted = provider.tier === "premium";
 
   return (
     <article
-      className={`rounded-card border bg-surface p-5 transition-shadow hover:shadow-sm ${
-        highlighted ? "border-brand-100 ring-1 ring-brand-100" : "border-line"
+      className={`card card-interactive group relative overflow-hidden p-5 ${
+        promoted ? "border-brand-200" : ""
       }`}
     >
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h3 className="text-lg">
+      {/* Paid placement is disclosed rather than disguised — brief §12 lets tier
+          move a listing up the page, §24 forbids implying it means more trust. */}
+      {promoted && (
+        <>
+          <span
+            aria-hidden="true"
+            className="absolute inset-x-0 top-0 h-0.5 bg-brand-500"
+          />
+          <span className="absolute right-4 top-4 rounded-full bg-accent-50 px-2 py-0.5 text-[0.6875rem] font-medium uppercase tracking-wide text-accent-700 ring-1 ring-accent-200">
+            Promoted
+          </span>
+        </>
+      )}
+
+      <div className="flex items-start gap-4">
+        <span
+          aria-hidden="true"
+          className="grid size-12 shrink-0 place-items-center rounded-card bg-brand-50 font-display text-lg text-brand-700 ring-1 ring-brand-100"
+        >
+          {initials(provider.name)}
+        </span>
+
+        <div className="min-w-0 flex-1">
+          <h3 className={`text-lg leading-snug ${promoted ? "pr-24" : ""}`}>
             <Link
               href={`/providers/${provider.slug}`}
-              className="text-ink hover:text-brand-700"
+              className="text-ink transition-colors after:absolute after:inset-0 after:content-[''] group-hover:text-brand-700"
             >
               {provider.name}
             </Link>
           </h3>
-          <p className="mt-0.5 text-sm text-ink-faint">
-            {provider.city.name}
-            {provider.areas_covered.length > 0 && (
-              <> &middot; {provider.areas_covered.slice(0, 3).join(", ")}</>
-            )}
+
+          <p className="mt-1 flex items-center gap-1.5 text-sm text-ink-faint">
+            <MapPin className="size-4 shrink-0" />
+            <span className="truncate">
+              {provider.city.name}
+              {provider.areas_covered.length > 0 && (
+                <> &middot; {provider.areas_covered.slice(0, 3).join(", ")}</>
+              )}
+            </span>
           </p>
+
+          <div className="mt-2.5">
+            <VerificationBadge level={provider.verification} />
+          </div>
         </div>
-        <VerificationBadge level={provider.verification} />
       </div>
 
       {provider.description && (
-        <p className="mt-3 line-clamp-2 text-sm text-ink-soft">{provider.description}</p>
+        <p className="mt-4 line-clamp-2 text-sm leading-relaxed text-ink-soft">
+          {provider.description}
+        </p>
       )}
 
       <ul className="mt-4 flex flex-wrap gap-1.5">
         {provider.services.slice(0, 4).map((service) => (
-          <li
-            key={service.id}
-            className="rounded-full bg-surface-alt px-2.5 py-1 text-xs text-ink-soft"
-          >
+          <li key={service.id} className="chip chip-neutral">
             {service.name}
           </li>
         ))}
         {provider.services.length > 4 && (
-          <li className="px-1 py-1 text-xs text-ink-faint">
-            +{provider.services.length - 4} more
-          </li>
+          <li className="chip text-ink-faint">+{provider.services.length - 4} more</li>
         )}
       </ul>
 
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-line-soft pt-4 text-sm">
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-ink-faint">
+      <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-line-soft pt-4 text-sm">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-ink-faint">
           {provider.pricing_band && (
-            <span>{PRICING_BAND_LABEL[provider.pricing_band]}</span>
+            <span className="inline-flex items-center gap-1.5">
+              <Rupee className="size-4" />
+              {PRICING_BAND_LABEL[provider.pricing_band]}
+            </span>
           )}
           {provider.languages.length > 0 && (
-            <span>{provider.languages.slice(0, 3).join(", ")}</span>
+            <span className="inline-flex items-center gap-1.5">
+              <Globe className="size-4" />
+              {provider.languages.slice(0, 3).join(", ")}
+            </span>
           )}
-          {provider.established_year && <span>Since {provider.established_year}</span>}
+          {provider.established_year && (
+            <span className="inline-flex items-center gap-1.5">
+              <Calendar className="size-4" />
+              Since {provider.established_year}
+            </span>
+          )}
         </div>
 
+        {/* Sits above the card-wide overlay link so it stays independently
+            clickable and keeps its own focus ring. */}
         <Link
           href={`/providers/${provider.slug}#enquire`}
-          className="rounded-card bg-brand-600 px-3.5 py-2 font-medium text-white transition-colors hover:bg-brand-700"
+          className="btn btn-primary relative z-10 px-4 py-2 text-sm"
         >
           Send care request
+          <ArrowRight className="size-4" />
         </Link>
       </div>
     </article>

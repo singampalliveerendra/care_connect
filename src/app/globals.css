@@ -1,63 +1,438 @@
 @import "tailwindcss";
 
+/* ------------------------------------------------------------------ tokens
+   The palette is deliberately warm. Families arriving here are usually
+   anxious and often overseas; clinical blue-and-white reads as a hospital,
+   which is the feeling we are trying to avoid. Deep sage carries the trust,
+   marigold carries the warmth. */
+
 @theme {
-  /* Warm, calm palette — trust without clinical coldness. */
   --color-ground: #fbfaf7;
+  --color-ground-deep: #f4f2ec;
   --color-surface: #ffffff;
   --color-surface-alt: #f2f1ec;
+  --color-surface-sunk: #edece5;
+
   --color-line: #e3e1d9;
   --color-line-soft: #ecebe4;
+  --color-line-strong: #d3d0c4;
 
   --color-ink: #1b201c;
   --color-ink-soft: #545c54;
   --color-ink-faint: #7d857c;
+  --color-ink-invert: #f7f6f2;
 
-  --color-brand-50: #eaf2ee;
+  --color-brand-50: #eef5f1;
   --color-brand-100: #d3e5dc;
+  --color-brand-200: #aed0c1;
+  --color-brand-300: #7fb5a0;
+  --color-brand-400: #529680;
   --color-brand-500: #2f7d62;
   --color-brand-600: #1f6650;
   --color-brand-700: #164e3d;
+  --color-brand-800: #103b2f;
   --color-brand-900: #0d2f25;
 
-  --color-accent-500: #b8762a;
+  --color-accent-50: #fdf5e9;
   --color-accent-100: #f6ecdc;
+  --color-accent-200: #ecd7b4;
+  --color-accent-300: #dfb87c;
+  --color-accent-400: #cd9748;
+  --color-accent-500: #b8762a;
+  --color-accent-600: #98601f;
+  --color-accent-700: #744917;
 
-  --color-danger-500: #a33d20;
   --color-danger-100: #f7e7e1;
+  --color-danger-200: #eec6b8;
+  --color-danger-500: #a33d20;
+  --color-danger-700: #7a2c15;
 
-  --font-display: var(--font-newsreader), Georgia, serif;
+  --color-success-100: #dff0e4;
+  --color-success-500: #2c7a45;
+  --color-success-700: #1d5a31;
+
+  --font-display: var(--font-newsreader), Georgia, "Times New Roman", serif;
   --font-sans: var(--font-public-sans), ui-sans-serif, system-ui, sans-serif;
 
-  --radius-card: 0.5rem;
+  --radius-card: 0.875rem;
+  --radius-panel: 1.25rem;
+  --radius-hero: 2rem;
+
+  /* Shadows are tinted with the brand hue rather than pure black — on a warm
+     ground, neutral-black shadows read as dirt. */
+  --shadow-soft: 0 1px 2px rgb(22 78 61 / 0.05), 0 2px 8px rgb(22 78 61 / 0.04);
+  --shadow-lift: 0 2px 4px rgb(22 78 61 / 0.05), 0 10px 24px -6px rgb(22 78 61 / 0.1);
+  --shadow-float: 0 4px 8px rgb(22 78 61 / 0.06), 0 20px 44px -12px rgb(22 78 61 / 0.16);
+
+  --animate-fade-rise: fade-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-fade-in: fade-in 0.4s ease-out both;
+
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
 }
+
+@keyframes fade-rise {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ------------------------------------------------------------------- base */
 
 @layer base {
   html {
     scroll-behavior: smooth;
+    /* The sticky header is 4rem; anchor targets need to clear it. */
+    scroll-padding-top: 5rem;
   }
+
   body {
     background-color: var(--color-ground);
     color: var(--color-ink);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
-  h1, h2, h3 {
+
+  h1,
+  h2,
+  h3 {
     font-family: var(--font-display);
     font-weight: 500;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.015em;
     text-wrap: balance;
   }
+
+  p {
+    text-wrap: pretty;
+  }
+
   :focus-visible {
     outline: 2px solid var(--color-brand-600);
     outline-offset: 2px;
-    border-radius: 2px;
+    border-radius: 3px;
+  }
+
+  select,
+  input,
+  textarea {
+    font-family: inherit;
+    color: inherit;
+  }
+
+  ::selection {
+    background-color: var(--color-brand-100);
+    color: var(--color-brand-900);
+  }
+}
+
+/* ------------------------------------------------------- component classes
+   These exist because the same shapes recur on ~15 pages. Keeping them here
+   rather than repeating a dozen utilities per element keeps the JSX
+   readable. */
+
+@layer components {
+  .card {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .card-interactive {
+    transition:
+      box-shadow 0.25s var(--ease-out-soft),
+      border-color 0.25s var(--ease-out-soft),
+      transform 0.25s var(--ease-out-soft);
+  }
+
+  .card-interactive:hover {
+    box-shadow: var(--shadow-lift);
+    border-color: var(--color-brand-200);
+    transform: translateY(-2px);
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: var(--radius-card);
+    padding: 0.6875rem 1.25rem;
+    font-weight: 500;
+    line-height: 1.25rem;
+    white-space: nowrap;
+    transition:
+      background-color 0.2s var(--ease-out-soft),
+      border-color 0.2s var(--ease-out-soft),
+      box-shadow 0.2s var(--ease-out-soft),
+      transform 0.12s var(--ease-out-soft);
+  }
+
+  .btn:active {
+    transform: translateY(1px);
+  }
+
+  .btn-primary {
+    background-color: var(--color-brand-600);
+    color: #fff;
+    box-shadow: var(--shadow-soft);
+  }
+  .btn-primary:hover {
+    background-color: var(--color-brand-700);
+    box-shadow: var(--shadow-lift);
+  }
+
+  .btn-secondary {
+    background-color: var(--color-surface);
+    color: var(--color-brand-700);
+    border: 1px solid var(--color-brand-200);
+  }
+  .btn-secondary:hover {
+    background-color: var(--color-brand-50);
+    border-color: var(--color-brand-300);
+  }
+
+  .btn-ghost {
+    color: var(--color-ink-soft);
+  }
+  .btn-ghost:hover {
+    color: var(--color-brand-700);
+    background-color: var(--color-brand-50);
+  }
+
+  .btn-accent {
+    background-color: var(--color-accent-500);
+    color: #fff;
+    box-shadow: var(--shadow-soft);
+  }
+  .btn-accent:hover {
+    background-color: var(--color-accent-600);
+    box-shadow: var(--shadow-lift);
+  }
+
+  .btn[disabled],
+  .btn[aria-disabled="true"] {
+    opacity: 0.55;
+    pointer-events: none;
+  }
+
+  /* Form fields — one shape, used by every form in the app. */
+  .field {
+    width: 100%;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-line-strong);
+    border-radius: var(--radius-card);
+    padding: 0.625rem 0.875rem;
+    color: var(--color-ink);
+    transition:
+      border-color 0.2s var(--ease-out-soft),
+      box-shadow 0.2s var(--ease-out-soft);
+  }
+
+  .field:hover {
+    border-color: var(--color-brand-300);
+  }
+
+  .field:focus,
+  .field:focus-visible {
+    outline: none;
+    border-color: var(--color-brand-500);
+    box-shadow: 0 0 0 3px var(--color-brand-100);
+  }
+
+  .field[aria-invalid="true"] {
+    border-color: var(--color-danger-500);
+  }
+  .field[aria-invalid="true"]:focus {
+    box-shadow: 0 0 0 3px var(--color-danger-100);
+  }
+
+  .field-label {
+    display: block;
+    margin-bottom: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-ink);
+  }
+
+  .field-hint {
+    margin-top: 0.375rem;
+    font-size: 0.8125rem;
+    color: var(--color-ink-faint);
+  }
+
+  .field-error {
+    margin-top: 0.375rem;
+    font-size: 0.8125rem;
+    color: var(--color-danger-500);
+  }
+
+  /* A select needs its own arrow once the native appearance is removed. */
+  select.field {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%237d857c' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6.5 8 10.5 12 6.5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1rem;
+    padding-right: 2.25rem;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    border-radius: 9999px;
+    padding: 0.25rem 0.6875rem;
+    font-size: 0.8125rem;
+    line-height: 1.125rem;
+  }
+
+  .chip-neutral {
+    background-color: var(--color-surface-alt);
+    color: var(--color-ink-soft);
+  }
+
+  .chip-brand {
+    background-color: var(--color-brand-50);
+    color: var(--color-brand-700);
+    box-shadow: inset 0 0 0 1px var(--color-brand-100);
+  }
+
+  .eyebrow {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-brand-600);
+  }
+
+  /* Long-form copy on the static pages (about, privacy, terms…). */
+  .prose-care {
+    color: var(--color-ink-soft);
+    line-height: 1.75;
+  }
+  .prose-care h2 {
+    margin-top: 2.5rem;
+    margin-bottom: 0.75rem;
+    font-size: 1.375rem;
+    color: var(--color-ink);
+  }
+  .prose-care h3 {
+    margin-top: 1.75rem;
+    margin-bottom: 0.5rem;
+    font-size: 1.0625rem;
+    color: var(--color-ink);
+  }
+  .prose-care p + p {
+    margin-top: 1rem;
+  }
+  .prose-care ul {
+    margin-top: 0.75rem;
+    display: grid;
+    gap: 0.5rem;
+  }
+  .prose-care li {
+    padding-left: 1.25rem;
+    position: relative;
+  }
+  .prose-care li::before {
+    content: "";
+    position: absolute;
+    left: 0.25rem;
+    top: 0.7em;
+    width: 0.3125rem;
+    height: 0.3125rem;
+    border-radius: 9999px;
+    background-color: var(--color-brand-300);
+  }
+  .prose-care a {
+    color: var(--color-brand-700);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+}
+
+/* -------------------------------------------------------------- utilities */
+
+/* A very fine film grain for the hero areas. Flat gradients across a large
+   band badly on cheap screens; noise breaks the banding up. */
+@utility grain-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.4;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
+}
+
+/* The dotted field behind the hero — the closest thing this design has to a
+   signature mark. */
+@utility dot-field {
+  background-image: radial-gradient(var(--color-brand-200) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+@utility stack-lines {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--color-brand-100) 0 1px,
+    transparent 1px 9px
+  );
+}
+
+/* Staggered entrance for grids. Applied to the container; children animate in
+   sequence. Purely decorative — content is fully present without it. */
+@utility stagger {
+  & > * {
+    animation: var(--animate-fade-rise);
+  }
+  & > *:nth-child(1) {
+    animation-delay: 0ms;
+  }
+  & > *:nth-child(2) {
+    animation-delay: 60ms;
+  }
+  & > *:nth-child(3) {
+    animation-delay: 120ms;
+  }
+  & > *:nth-child(4) {
+    animation-delay: 180ms;
+  }
+  & > *:nth-child(5) {
+    animation-delay: 240ms;
+  }
+  & > *:nth-child(6) {
+    animation-delay: 300ms;
+  }
+  & > *:nth-child(n + 7) {
+    animation-delay: 360ms;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+  .card-interactive:hover {
+    transform: none;
   }
 }

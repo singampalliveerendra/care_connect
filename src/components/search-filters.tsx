@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
+import { useId } from "react";
 
 import type { SearchFilters as Filters } from "@/lib/queries";
 
@@ -13,6 +14,7 @@ export function SearchFilters({
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const verifiedLabelId = useId();
 
   function update(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString());
@@ -21,6 +23,8 @@ export function SearchFilters({
     params.delete("page");
     router.push(`/search?${params.toString()}`);
   }
+
+  const verifiedOnly = filters.verified === "verified";
 
   const hasFilters =
     Boolean(filters.area) ||
@@ -86,17 +90,42 @@ export function SearchFilters({
         </label>
       )}
 
-      <label className="block">
-        <span className="mb-1.5 block text-sm font-medium">Verification</span>
-        <select
-          value={filters.verified ?? "any"}
-          onChange={(event) => update("verified", event.target.value)}
-          className="w-full rounded-card border border-line bg-surface px-3 py-2 text-sm"
-        >
-          <option value="any">All providers</option>
-          <option value="verified">Verified only</option>
-        </select>
-      </label>
+      {/* Verification gets a switch rather than another dropdown. It is the
+          filter families reach for first, and a switch reads as on/off at a
+          glance where a fourth identical <select> disappears into the stack.
+          role="switch" keeps it a single announced control. */}
+      <div className="rounded-card border border-brand-100 bg-brand-50 p-3">
+        <div className="flex items-start justify-between gap-3">
+          <span className="min-w-0">
+            <span id={verifiedLabelId} className="block text-sm font-medium text-ink">
+              Verified only
+            </span>
+            <span className="mt-0.5 block text-xs text-ink-soft">
+              Providers CareConnect has checked.
+            </span>
+          </span>
+
+          <button
+            type="button"
+            role="switch"
+            aria-checked={verifiedOnly}
+            aria-labelledby={verifiedLabelId}
+            onClick={() => update("verified", verifiedOnly ? "any" : "verified")}
+            className={`relative mt-0.5 inline-flex h-6 w-11 shrink-0 rounded-full border transition-colors ${
+              verifiedOnly
+                ? "border-brand-600 bg-brand-600"
+                : "border-line-strong bg-surface-sunk"
+            }`}
+          >
+            <span
+              aria-hidden="true"
+              className={`absolute top-0.5 size-4.5 rounded-full bg-white shadow-soft transition-[left] duration-200 ${
+                verifiedOnly ? "left-[1.375rem]" : "left-0.5"
+              }`}
+            />
+          </button>
+        </div>
+      </div>
 
       <label className="block">
         <span className="mb-1.5 block text-sm font-medium">Listing</span>
