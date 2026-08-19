@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import {
@@ -73,20 +74,38 @@ export default async function HomePage() {
         <div aria-hidden="true" className="grain-layer" />
 
         <div className="relative mx-auto max-w-6xl px-5 py-20 sm:py-28">
-          <p className="eyebrow animate-fade-rise">Aged care across India</p>
+          {/* Headline and mark sit side by side from lg up. Below that the mark
+              drops under the copy at a reduced size — a full-width square here
+              would push the search bar off the fold, and the search bar is the
+              only thing on this page a worried family actually needs. */}
+          <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_auto]">
+            <div>
+              <p className="eyebrow animate-fade-rise">Aged care across India</p>
 
-          <h1 className="animate-fade-rise mt-5 max-w-3xl text-4xl leading-[1.1] sm:text-6xl">
-            Find care you can trust for your parents,{" "}
-            <em className="font-normal not-italic text-brand-600">
-              wherever you are.
-            </em>
-          </h1>
+              <h1 className="animate-fade-rise mt-5 text-4xl leading-[1.1] sm:text-6xl">
+                Find care you can trust for your parents,{" "}
+                <em className="font-normal not-italic text-brand-600">
+                  wherever you are.
+                </em>
+              </h1>
 
-          <p className="animate-fade-rise mt-6 max-w-2xl text-lg leading-relaxed text-ink-soft">
-            Compare aged-care providers in your parents&rsquo; city, see exactly what has
-            been verified, and send one structured care request that reaches them
-            directly.
-          </p>
+              <p className="animate-fade-rise mt-6 max-w-2xl text-lg leading-relaxed text-ink-soft">
+                Compare aged-care providers in your parents&rsquo; city, see exactly what
+                has been verified, and send one structured care request that reaches
+                them directly.
+              </p>
+            </div>
+
+            <Image
+              src="/hero-care.png"
+              alt="An elderly couple at home within a location pin, cradled in an open hand beside a growing tree — find trusted care, peace of mind for your parents."
+              width={1254}
+              height={1254}
+              priority
+              sizes="(min-width: 1024px) 26rem, 15rem"
+              className="animate-fade-rise mx-auto w-60 max-w-full justify-self-center lg:w-[26rem] lg:justify-self-end"
+            />
+          </div>
 
           <div className="animate-fade-rise mt-10 max-w-3xl">
             <SearchBar cities={cities} services={services} />
