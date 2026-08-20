@@ -2,15 +2,18 @@
 
 import { useActionState, useState } from "react";
 
-import { signIn, signUp, type ActionState } from "@/app/provider/actions";
+import { authenticate, type ActionState, type AuthMode } from "@/app/provider/actions";
 
 const fieldClass =
   "w-full rounded-card border border-line bg-surface px-3 py-2.5 text-ink";
 
-export function AuthForm({ next, defaultMode = "signin" }: { next?: string; defaultMode?: "signin" | "signup" }) {
-  const [mode, setMode] = useState<"signin" | "signup">(defaultMode);
-  const action = mode === "signin" ? signIn : signUp;
-  const [state, formAction, pending] = useActionState<ActionState, FormData>(action, {});
+export function AuthForm({ next, defaultMode = "signin" }: { next?: string; defaultMode?: AuthMode }) {
+  const [mode, setMode] = useState<AuthMode>(defaultMode);
+  const [state, formAction, pending] = useActionState<ActionState, FormData>(authenticate, {});
+
+  // The hook's state survives a tab switch, so only show a result that came
+  // back from the tab currently on screen.
+  const result = state.mode === mode ? state : {};
 
   return (
     <div>
@@ -31,6 +34,7 @@ export function AuthForm({ next, defaultMode = "signin" }: { next?: string; defa
       </div>
 
       <form action={formAction} className="space-y-4">
+        <input type="hidden" name="mode" value={mode} />
         {next && <input type="hidden" name="next" value={next} />}
 
         <label className="block">
@@ -54,22 +58,22 @@ export function AuthForm({ next, defaultMode = "signin" }: { next?: string; defa
             autoComplete={mode === "signin" ? "current-password" : "new-password"}
             className={fieldClass}
           />
-          {state.fieldErrors?.password && (
+          {result.fieldErrors?.password && (
             <span className="mt-1 block text-xs text-danger-500">
-              {state.fieldErrors.password}
+              {result.fieldErrors.password}
             </span>
           )}
         </label>
 
-        {state.error && (
+        {result.error && (
           <p role="alert" className="rounded-card bg-danger-100 px-3 py-2 text-sm text-danger-500">
-            {state.error}
+            {result.error}
           </p>
         )}
 
-        {state.notice && (
+        {result.notice && (
           <p className="rounded-card bg-accent-100 px-3 py-2 text-sm text-ink-soft">
-            {state.notice}
+            {result.notice}
           </p>
         )}
 

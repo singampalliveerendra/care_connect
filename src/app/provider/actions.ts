@@ -6,10 +6,18 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { providerRegistrationSchema } from "@/lib/validation";
 
+export type AuthMode = "signin" | "signup";
+
 export type ActionState = {
   error?: string;
   fieldErrors?: Record<string, string>;
   notice?: string;
+  /**
+   * Which tab produced this state. The auth form keeps one `useActionState`
+   * across both tabs, so it uses this to drop a result that belongs to the
+   * tab the user has since switched away from.
+   */
+  mode?: AuthMode;
 };
 
 function slugify(value: string) {
@@ -20,22 +28,23 @@ function slugify(value: string) {
     .slice(0, 80);
 }
 
-export async function signUp(_prev: ActionState, formData: FormData): Promise<ActionState> {
+async function signUp(formData: FormData): Promise<ActionState> {
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
 
-  if (!email || !password) return { error: "Enter an email and password." };
+  if (!email || !password) return { mode: "signup", error: "Enter an email and password." };
   if (password.length < 8) {
-    return { fieldErrors: { password: "Use at least 8 characters." } };
+    return { mode: "signup", fieldErrors: { password: "Use at least 8 characters." } };
   }
 
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({ email, password });
 
-  if (error) return { error: error.message };
+  if (error) return { mode: "signup", error: error.message };
 
   if (!data.session) {
     return {
+      mode: "signup",
       notice:
         "Check your email to confirm your address, then sign in to finish your listing.",
     };
@@ -45,7 +54,7 @@ export async function signUp(_prev: ActionState, formData: FormData): Promise<Ac
   redirect("/provider/register");
 }
 
-export async function signIn(_prev: ActionState, formData: FormData): Promise<ActionState> {
+async function signIn(formData: FormData): Promise<ActionState> {
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
   const next = String(formData.get("next") ?? "/provider/dashboard");
@@ -53,9 +62,27 @@ export async function signIn(_prev: ActionState, formData: FormData): Promise<Ac
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
-  if (error) return { error: "That email and password don't match an account." };
+  if (error) {
+    return { mode: "signin", error: "That email and password don't match an account." };
+  }
 
   redirect(next.startsWith("/provider") ? next : "/provider/dashboard");
+}
+
+/**
+ * Single entry point for both auth tabs.
+ *
+ * The tab must be carried in the form data rather than by swapping which
+ * action is handed to `useActionState`: React only picks a swapped action up
+ * through a passive effect, and once the form has been submitted the swap is
+ * silently missed, so the form keeps posting the previously submitted action.
+ */
+export async function authenticate(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const mode: AuthMode = formData.get("mode") === "signup" ? "signup" : "signin";
+  return mode === "signup" ? signUp(formData) : signIn(formData);
 }
 
 export async function signOut() {
