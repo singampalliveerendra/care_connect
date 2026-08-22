@@ -1,7 +1,7 @@
 import { Close } from "@/components/icons";
 
 /**
- * What CareConnect deliberately isn't.
+ * What Care Connect deliberately isn't.
  *
  * Every line here is a brief constraint, not a legal hedge: no consumer
  * booking or payment (§20), no claim to supervise delivery (§11, §33), no

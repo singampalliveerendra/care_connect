@@ -487,7 +487,7 @@ export function CareRequestDialog({
               <Lock className="mt-0.5 size-4 shrink-0" />
               <span>
                 These details go to {providerName} and nobody else. We never sell them,
-                and no other provider on CareConnect can see this request.
+                and no other provider on Care Connect can see this request.
               </span>
             </p>
 

@@ -1,5 +1,6 @@
 import { cache } from "react";
 
+import type { SortOption } from "@/lib/domain";
 import { createPublicClient } from "@/lib/supabase/server";
 import type { City, Provider, Service, ServiceCategory } from "@/lib/database.types";
 
@@ -61,6 +62,7 @@ export type SearchFilters = {
   language?: string;
   verified?: "any" | "verified";
   tier?: "any" | "standard" | "premium";
+  sort?: SortOption;
   page?: number;
 };
 
@@ -106,11 +108,24 @@ export async function searchProviders(filters: SearchFilters): Promise<SearchRes
   if (filters.verified === "verified") query = query.neq("verification", "unverified");
   if (filters.tier && filters.tier !== "any") query = query.eq("tier", filters.tier);
 
-  const { data, error, count } = await query
-    .order("tier", { ascending: false })
-    .order("verification", { ascending: false })
-    .order("name")
-    .range(from, from + PAGE_SIZE - 1);
+  /* Postgres orders an enum by its declared order, and both `listing_tier` and
+     `verification_status` are declared weakest-first — hence descending for
+     "strongest first". */
+  if (filters.sort === "name") {
+    query = query.order("name");
+  } else if (filters.sort === "verified") {
+    query = query
+      .order("verification", { ascending: false })
+      .order("tier", { ascending: false })
+      .order("name");
+  } else {
+    query = query
+      .order("tier", { ascending: false })
+      .order("verification", { ascending: false })
+      .order("name");
+  }
+
+  const { data, error, count } = await query.range(from, from + PAGE_SIZE - 1);
 
   if (error) throw new Error(`Search failed: ${error.message}`);
 

@@ -20,15 +20,18 @@ const STYLES: Record<
     Glyph: Building,
   },
   credential_verified: {
-    className: "bg-brand-50 text-brand-700 ring-1 ring-brand-100",
+    className: "bg-brand-50 text-brand-700 ring-1 ring-brand-200",
     Glyph: FileCheck,
   },
   background_check: {
-    className: "bg-accent-50 text-accent-700 ring-1 ring-accent-200",
+    className: "bg-success-100 text-success-700 ring-1 ring-success-200",
     Glyph: IdCard,
   },
+  /* Solid green, the only badge that gets a filled ground: this is the level
+     the whole verification ladder is climbing towards, and it sits where a
+     directory would otherwise print a star rating. */
   careconnect_verified: {
-    className: "bg-brand-600 text-white shadow-soft",
+    className: "bg-success-500 text-white",
     Glyph: BadgeCheck,
   },
 };
@@ -69,8 +72,8 @@ export function VerificationBadge({
   return (
     <span className="inline-flex flex-col gap-1.5">
       <span
-        className={`inline-flex w-fit items-center gap-1.5 rounded-full font-medium ${className} ${
-          size === "md" ? "px-3.5 py-1.5 text-sm" : "px-2.5 py-1 text-xs"
+        className={`inline-flex w-fit items-center gap-1.5 rounded font-semibold ${className} ${
+          size === "md" ? "px-3 py-1.5 text-sm" : "px-2 py-1 text-xs"
         }`}
         title={entry.definition}
       >
@@ -89,7 +92,7 @@ export function VerificationBadge({
 export function UnverifiedNote({ level }: { level: VerificationLevel }) {
   if (VERIFICATION[level].showBadge) return null;
   return (
-    <p className="inline-flex items-center gap-1.5 rounded-full bg-surface-alt px-2.5 py-1 text-xs text-ink-faint">
+    <p className="inline-flex items-center gap-1.5 rounded bg-surface-alt px-2 py-1 text-xs text-ink-faint">
       <ShieldCheck className="size-3.5" />
       {VERIFICATION.unverified.definition}
     </p>

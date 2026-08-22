@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 
 import { registerProvider, type ActionState } from "@/app/provider/actions";
+import { Directions, WhatsApp } from "@/components/icons";
 import { LANGUAGES, PRICING_BANDS, PRICING_BAND_LABEL, STAFF_SIZES } from "@/lib/domain";
 import type { City } from "@/lib/database.types";
 import type { CategoryWithServices } from "@/lib/queries";
@@ -25,6 +26,51 @@ export function ProviderRegistrationForm({
     registerProvider,
     {},
   );
+
+  /* Most small providers answer calls and WhatsApp on the same handset, so the
+     box is ticked by default and the second number simply mirrors the first.
+     The ones who run a separate WhatsApp line untick it — but nobody has to
+     type ten digits twice to describe the common case. */
+  const [phone, setPhone] = useState("");
+  const [sameWhatsapp, setSameWhatsapp] = useState(true);
+  const [whatsapp, setWhatsapp] = useState("");
+
+  const [coords, setCoords] = useState<{ latitude: number; longitude: number } | null>(
+    null,
+  );
+  const [locating, setLocating] = useState(false);
+  const [locationError, setLocationError] = useState<string | null>(null);
+
+  function dropPin() {
+    if (!("geolocation" in navigator)) {
+      setLocationError("This browser can't share a location. You can skip this.");
+      return;
+    }
+
+    setLocating(true);
+    setLocationError(null);
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setCoords({
+          // Six decimals is roughly 0.1 m — past that the column would round
+          // anyway, and the extra digits are noise from the device.
+          latitude: Number(position.coords.latitude.toFixed(6)),
+          longitude: Number(position.coords.longitude.toFixed(6)),
+        });
+        setLocating(false);
+      },
+      (error) => {
+        setLocating(false);
+        setLocationError(
+          error.code === error.PERMISSION_DENIED
+            ? "Location permission was declined. This is optional — carry on without it."
+            : "We couldn't read your location just now. You can try again or skip it.",
+        );
+      },
+      { enableHighAccuracy: true, timeout: 10_000 },
+    );
+  }
 
   const error = (field: string) =>
     state.fieldErrors?.[field] && (
@@ -166,16 +212,59 @@ export function ProviderRegistrationForm({
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block">
             <span className="mb-1.5 block text-sm font-medium">Contact phone</span>
-            <input name="phone" type="tel" className={fieldClass} required />
+            <input
+              name="phone"
+              type="tel"
+              value={phone}
+              onChange={(event) => setPhone(event.target.value)}
+              className={fieldClass}
+              placeholder="+91 90000 10001"
+              autoComplete="tel"
+              required
+            />
+            <span className="mt-1 block text-xs text-ink-faint">
+              Shown on your listing so families can call you directly.
+            </span>
             {error("phone")}
           </label>
 
-          <label className="block">
-            <span className="mb-1.5 block text-sm font-medium">Contact email</span>
-            <input name="email" type="email" defaultValue={defaultEmail} className={fieldClass} required />
-            {error("email")}
-          </label>
+          {/* Two controls, so two labels — a checkbox nested inside the text
+              field's own <label> would leave the browser guessing which one a
+              click on the words belongs to. */}
+          <div className="block">
+            <label htmlFor="whatsapp" className="mb-1.5 flex items-center gap-1.5 text-sm font-medium">
+              <WhatsApp className="size-4 text-whatsapp-deep" />
+              WhatsApp number
+              <span className="font-normal text-ink-faint">optional</span>
+            </label>
+            <input
+              id="whatsapp"
+              name="whatsapp"
+              type="tel"
+              value={sameWhatsapp ? phone : whatsapp}
+              onChange={(event) => setWhatsapp(event.target.value)}
+              readOnly={sameWhatsapp}
+              className={`${fieldClass} ${sameWhatsapp ? "bg-surface-alt text-ink-soft" : ""}`}
+              placeholder="+91 90000 10001"
+            />
+            <label className="mt-1.5 flex items-center gap-2 text-xs text-ink-faint">
+              <input
+                type="checkbox"
+                checked={sameWhatsapp}
+                onChange={(event) => setSameWhatsapp(event.target.checked)}
+                className="accent-brand-600"
+              />
+              Same as my contact phone
+            </label>
+            {error("whatsapp")}
+          </div>
         </div>
+
+        <label className="block sm:max-w-sm">
+          <span className="mb-1.5 block text-sm font-medium">Contact email</span>
+          <input name="email" type="email" defaultValue={defaultEmail} className={fieldClass} required />
+          {error("email")}
+        </label>
 
         <label className="block">
           <span className="mb-1.5 block text-sm font-medium">Website</span>
@@ -192,6 +281,70 @@ export function ProviderRegistrationForm({
           <input type="checkbox" name="addressIsPublic" className="accent-brand-600" />
           Show this address on my public profile
         </label>
+
+        {/* Optional map pin. Written addresses in Indian cities are frequently
+            unroutable ("behind the water tank, second lane"), so a provider who
+            can stand at their gate and tap this gives families a Directions
+            link that actually works. Skipping it costs the listing nothing. */}
+        <div className="rounded-card border border-line bg-surface-alt p-4">
+          <p className="flex items-center gap-2 text-sm font-medium">
+            <Directions className="size-4 text-brand-600" />
+            Map location
+            <span className="font-normal text-ink-faint">optional</span>
+          </p>
+          <p className="mt-1 text-sm text-ink-soft">
+            Tap this while you are at the premises and families get a working
+            &ldquo;Directions&rdquo; link on your listing.
+          </p>
+
+          {coords && (
+            <>
+              <input type="hidden" name="latitude" value={coords.latitude} />
+              <input type="hidden" name="longitude" value={coords.longitude} />
+            </>
+          )}
+
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={dropPin}
+              disabled={locating}
+              className="rounded-card border border-line-strong bg-surface px-4 py-2 text-sm font-medium text-ink-soft transition-colors hover:border-brand-300 disabled:opacity-60"
+            >
+              {locating ? "Finding you…" : coords ? "Update pin" : "Use my current location"}
+            </button>
+
+            {coords && (
+              <>
+                <span className="text-sm text-success-700">
+                  Pin saved &middot; {coords.latitude}, {coords.longitude}
+                </span>
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${coords.latitude},${coords.longitude}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-brand-700 underline underline-offset-2"
+                >
+                  Check it
+                </a>
+                <button
+                  type="button"
+                  onClick={() => setCoords(null)}
+                  className="text-sm text-ink-faint underline underline-offset-2"
+                >
+                  Remove
+                </button>
+              </>
+            )}
+          </div>
+
+          {locationError && (
+            <p className="mt-2 text-xs text-ink-faint" role="status">
+              {locationError}
+            </p>
+          )}
+          {error("latitude")}
+        </div>
 
         <p className="rounded-card bg-surface-alt px-4 py-3 text-sm text-ink-soft">
           Your listing starts on the free tier and stays unverified until our team reviews

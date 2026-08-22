@@ -63,9 +63,12 @@ export type Provider = {
   areas_covered: string[];
   languages: string[];
   phone: string;
+  whatsapp: string | null;
   email: string;
   website: string | null;
   address: string | null;
+  latitude: number | null;
+  longitude: number | null;
   address_is_public: boolean;
   pricing_band: PricingBand | null;
   established_year: number | null;

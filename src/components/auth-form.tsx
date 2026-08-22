@@ -2,12 +2,34 @@
 
 import { useActionState, useState } from "react";
 
-import { authenticate, type ActionState, type AuthMode } from "@/app/provider/actions";
+import {
+  authenticate,
+  signInWithProvider,
+  type ActionState,
+  type AuthMode,
+} from "@/app/provider/actions";
+import { Google } from "@/components/icons";
 
 const fieldClass =
   "w-full rounded-card border border-line bg-surface px-3 py-2.5 text-ink";
 
-export function AuthForm({ next, defaultMode = "signin" }: { next?: string; defaultMode?: AuthMode }) {
+/** Messages for the `?error=` the OAuth callback bounces back with. A failed
+ *  social sign-in lands on a fresh page render, so it cannot be reported
+ *  through the form's action state. */
+const OAUTH_ERRORS: Record<string, string> = {
+  cancelled: "Sign-in was cancelled. Try again, or use your email and password.",
+  oauth: "We couldn't complete that sign-in. Try again, or use your email and password.",
+};
+
+export function AuthForm({
+  next,
+  defaultMode = "signin",
+  oauthError,
+}: {
+  next?: string;
+  defaultMode?: AuthMode;
+  oauthError?: string;
+}) {
   const [mode, setMode] = useState<AuthMode>(defaultMode);
   const [state, formAction, pending] = useActionState<ActionState, FormData>(authenticate, {});
 
@@ -31,6 +53,33 @@ export function AuthForm({ next, defaultMode = "signin" }: { next?: string; defa
             {option === "signin" ? "Sign in" : "Create account"}
           </button>
         ))}
+      </div>
+
+      {oauthError && OAUTH_ERRORS[oauthError] && (
+        <p
+          role="alert"
+          className="mb-4 rounded-card bg-danger-100 px-3 py-2 text-sm text-danger-500"
+        >
+          {OAUTH_ERRORS[oauthError]}
+        </p>
+      )}
+
+      <form action={signInWithProvider}>
+        <input type="hidden" name="provider" value="google" />
+        {next && <input type="hidden" name="next" value={next} />}
+        <button
+          type="submit"
+          className="flex w-full items-center justify-center gap-2.5 rounded-card border border-line bg-surface px-4 py-2.5 font-medium text-ink transition-colors hover:bg-surface-alt"
+        >
+          <Google className="size-5 shrink-0" />
+          Continue with Google
+        </button>
+      </form>
+
+      <div className="my-6 flex items-center gap-3 text-xs uppercase tracking-wide text-ink-faint">
+        <span className="h-px flex-1 bg-line" />
+        or use your email
+        <span className="h-px flex-1 bg-line" />
       </div>
 
       <form action={formAction} className="space-y-4">

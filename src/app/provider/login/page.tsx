@@ -11,9 +11,9 @@ export const metadata: Metadata = {
 export default async function ProviderLoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string }>;
+  searchParams: Promise<{ next?: string; error?: string }>;
 }) {
-  const { next } = await searchParams;
+  const { next, error } = await searchParams;
 
   return (
     <div className="mx-auto max-w-md px-5 py-16">
@@ -23,11 +23,11 @@ export default async function ProviderLoginPage({
       </p>
 
       <div className="mt-8">
-        <AuthForm next={next} />
+        <AuthForm next={next} oauthError={error} />
       </div>
 
       <p className="mt-8 text-sm text-ink-faint">
-        New to CareConnect?{" "}
+        New to Care Connect?{" "}
         <Link href="/provider/register" className="text-brand-700 underline underline-offset-2">
           List your service
         </Link>

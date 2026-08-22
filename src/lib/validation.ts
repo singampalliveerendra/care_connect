@@ -4,6 +4,8 @@ import {
   LANGUAGES,
   MOBILITY_LEVELS,
   PRICING_BANDS,
+  SHORTLIST_MAX,
+  SORT_OPTIONS,
   STAFF_SIZES,
   URGENCY_LEVELS,
 } from "@/lib/domain";
@@ -15,6 +17,29 @@ const phone = z
   .min(10, "Enter a phone number we can reach you on")
   .max(20)
   .regex(/^(\+?91[\s-]?)?[6-9]\d{4}[\s-]?\d{5}$/, "Enter a valid Indian mobile number");
+
+/** Same shape as `phone`, but a listing may simply not have a WhatsApp line. */
+const optionalPhone = z
+  .string()
+  .trim()
+  .optional()
+  .or(z.literal(""))
+  .transform((v) => v || undefined)
+  .refine(
+    (v) => v === undefined || /^(\+?91[\s-]?)?[6-9]\d{4}[\s-]?\d{5}$/.test(v),
+    "Enter a valid Indian mobile number, or leave this blank",
+  );
+
+/** A map pin arrives from the browser's geolocation API, so it is a string in
+ *  the form data and empty when the provider declined to share it. */
+const optionalCoordinate = (max: number) =>
+  z.coerce
+    .number()
+    .min(-max)
+    .max(max)
+    .optional()
+    .or(z.literal(""))
+    .transform((v) => (v === "" || v === undefined ? undefined : Number(v)));
 
 const optionalText = (max: number) =>
   z.string().trim().max(max).optional().or(z.literal("")).transform((v) => v || undefined);
@@ -59,6 +84,36 @@ export const enquirySchema = z.object({
 
 export type EnquiryInput = z.infer<typeof enquirySchema>;
 
+/**
+ * The short form in the search sidebar: one request, sent to the handful of
+ * providers currently at the top of the results.
+ *
+ * It asks for less than the full care request because it is answered before a
+ * family has picked anybody — but it still requires a written requirement, so
+ * what lands in a provider's inbox is a real enquiry rather than a bare phone
+ * number they have to cold-call.
+ */
+export const shortlistEnquirySchema = z.object({
+  providerIds: z.array(z.uuid()).min(1, "Nobody to send this to").max(SHORTLIST_MAX),
+  /* No city: each enquiry is filed against the city its provider operates in,
+     read from the provider row in the route. */
+  serviceId: z.uuid("Choose the type of care you need"),
+
+  familyName: z.string().trim().min(2, "Enter your name").max(120),
+  phone,
+  email: z.email("Enter a valid email").optional().or(z.literal("")).transform((v) => v || undefined),
+  careRequirement: z
+    .string()
+    .trim()
+    .min(20, "A sentence about what's needed helps them answer properly")
+    .max(2000),
+
+  /** Honeypot — see the enquiries route. */
+  website: z.string().optional(),
+});
+
+export type ShortlistEnquiryInput = z.infer<typeof shortlistEnquirySchema>;
+
 /** Brief §6.2 — multi-step provider registration. */
 export const providerRegistrationSchema = z.object({
   name: z.string().trim().min(2, "Enter your organisation's name").max(160),
@@ -68,10 +123,13 @@ export const providerRegistrationSchema = z.object({
   areasCovered: z.array(z.string().trim().min(1).max(80)).max(20).default([]),
   languages: z.array(z.enum(LANGUAGES)).max(12).default([]),
   phone,
+  whatsapp: optionalPhone,
   email: z.email("Enter a valid contact email"),
   website: z.url("Enter a valid URL").optional().or(z.literal("")).transform((v) => v || undefined),
   address: optionalText(300),
   addressIsPublic: z.boolean().default(false),
+  latitude: optionalCoordinate(90),
+  longitude: optionalCoordinate(180),
   pricingBand: z.enum(PRICING_BANDS).optional(),
   establishedYear: z.coerce
     .number()
@@ -80,7 +138,10 @@ export const providerRegistrationSchema = z.object({
     .max(new Date().getFullYear())
     .optional(),
   staffSize: z.enum(STAFF_SIZES).optional(),
-});
+}).refine(
+  (input) => (input.latitude === undefined) === (input.longitude === undefined),
+  { message: "Drop the pin again — we only got half of it", path: ["latitude"] },
+);
 
 export type ProviderRegistrationInput = z.infer<typeof providerRegistrationSchema>;
 
@@ -92,5 +153,6 @@ export const searchParamsSchema = z.object({
   language: z.string().trim().max(40).optional(),
   verified: z.enum(["any", "verified"]).default("any"),
   tier: z.enum(["any", "standard", "premium"]).default("any"),
+  sort: z.enum(SORT_OPTIONS).default("recommended"),
   page: z.coerce.number().int().min(1).max(200).default(1),
 });

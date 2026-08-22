@@ -22,18 +22,18 @@ export const VERIFICATION: Record<
 > = {
   unverified: {
     label: "Not yet verified",
-    definition: "Listed on CareConnect. Verification has not been completed.",
+    definition: "Listed on Care Connect. Verification has not been completed.",
     showBadge: false,
   },
   business_verified: {
     label: "Business verified",
-    definition: "CareConnect has checked this provider's basic business details.",
+    definition: "Care Connect has checked this provider's basic business details.",
     showBadge: true,
   },
   credential_verified: {
     label: "Credentials verified",
     definition:
-      "CareConnect has checked the professional credentials relevant to the services offered.",
+      "Care Connect has checked the professional credentials relevant to the services offered.",
     showBadge: true,
   },
   background_check: {
@@ -43,9 +43,9 @@ export const VERIFICATION: Record<
     showBadge: true,
   },
   careconnect_verified: {
-    label: "CareConnect Verified",
+    label: "Care Connect Verified",
     definition:
-      "This provider has completed the full set of checks defined by CareConnect policy.",
+      "This provider has completed the full set of checks defined by Care Connect policy.",
     showBadge: true,
   },
 };
@@ -55,6 +55,31 @@ export type Tier = (typeof TIERS)[number];
 
 /** Search ranking weight. Brief §12: Premium top, Standard boosted, Free listed. */
 export const TIER_RANK: Record<Tier, number> = { premium: 0, standard: 1, free: 2 };
+
+/**
+ * Result ordering. "Recommended" is the brief §12 order (paid placement first,
+ * verification breaking ties) and stays the default; the other two exist so a
+ * family that distrusts that order has somewhere to go, which is the honest
+ * way to run a ranked directory.
+ */
+export const SORT_OPTIONS = ["recommended", "verified", "name"] as const;
+export type SortOption = (typeof SORT_OPTIONS)[number];
+
+export const SORT_LABEL: Record<SortOption, string> = {
+  recommended: "Recommended",
+  verified: "Most verified",
+  name: "Name (A–Z)",
+};
+
+/**
+ * How many providers one sidebar request may reach at once.
+ *
+ * Three, because it is the number the "what happens next" page already tells
+ * families is normal to contact, and because a request that lands on ten desks
+ * turns a care enquiry into spam — for the family answering ten calls as much
+ * as for the providers paying for the lead.
+ */
+export const SHORTLIST_MAX = 3;
 
 export const PRICING_BANDS = ["budget", "mid", "premium"] as const;
 export const PRICING_BAND_LABEL: Record<string, string> = {

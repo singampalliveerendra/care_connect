@@ -1,10 +1,21 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useId } from "react";
 
+import { BadgeCheck, Filter } from "@/components/icons";
+import { SORT_LABEL, SORT_OPTIONS } from "@/lib/domain";
 import type { SearchFilters as Filters } from "@/lib/queries";
 
+/**
+ * The filter row.
+ *
+ * This used to be a 16rem left rail. On a directory that rail is expensive —
+ * it takes the width the listings need to fit a phone number, a WhatsApp
+ * button and an address on one line — and it was carrying four controls that
+ * fit comfortably in a single row above the results. Each control renders as
+ * the chip it produces, and lights up when it is doing something, so the
+ * active filter set is readable without opening anything.
+ */
 export function SearchFilters({
   facets,
   filters,
@@ -14,14 +25,13 @@ export function SearchFilters({
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const verifiedLabelId = useId();
 
   function update(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString());
     if (value && value !== "any") params.set(key, value);
     else params.delete(key);
     params.delete("page");
-    router.push(`/search?${params.toString()}`);
+    router.push(`/search?${params.toString()}`, { scroll: false });
   }
 
   const verifiedOnly = filters.verified === "verified";
@@ -29,38 +39,55 @@ export function SearchFilters({
   const hasFilters =
     Boolean(filters.area) ||
     Boolean(filters.language) ||
-    filters.verified === "verified" ||
-    (filters.tier && filters.tier !== "any");
+    verifiedOnly ||
+    (filters.tier && filters.tier !== "any") ||
+    (filters.sort && filters.sort !== "recommended");
 
   return (
-    <aside className="space-y-6 lg:sticky lg:top-6 lg:self-start">
-      <div className="flex items-center justify-between">
-        <h2 className="font-sans text-xs font-semibold uppercase tracking-widest text-ink-faint">
-          Filters
-        </h2>
-        {hasFilters && (
-          <button
-            type="button"
-            onClick={() => {
-              const params = new URLSearchParams();
-              if (filters.city) params.set("city", filters.city);
-              if (filters.service) params.set("service", filters.service);
-              router.push(`/search?${params.toString()}`);
-            }}
-            className="text-xs text-brand-700 underline underline-offset-2"
-          >
-            Clear all
-          </button>
-        )}
-      </div>
+    <div className="flex flex-wrap items-center gap-2">
+      <span className="inline-flex items-center gap-2 pe-1 text-sm text-ink-faint">
+        <Filter className="size-4" />
+        <span className="sr-only sm:not-sr-only">Filter</span>
+      </span>
+
+      <label className="contents">
+        <span className="sr-only">Sort results</span>
+        <select
+          value={filters.sort ?? "recommended"}
+          onChange={(event) => update("sort", event.target.value)}
+          data-active={(filters.sort ?? "recommended") !== "recommended"}
+          className="filter-pill"
+        >
+          {SORT_OPTIONS.map((option) => (
+            <option key={option} value={option}>
+              Sort: {SORT_LABEL[option]}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      {/* Verification is a button rather than a fifth dropdown: it is the
+          filter families reach for first, and an on/off control reads at a
+          glance where another identical <select> disappears into the row. */}
+      <button
+        type="button"
+        aria-pressed={verifiedOnly}
+        onClick={() => update("verified", verifiedOnly ? "any" : "verified")}
+        data-active={verifiedOnly}
+        className="filter-pill"
+      >
+        <BadgeCheck className="size-4" />
+        Verified only
+      </button>
 
       {facets.areas.length > 0 && (
-        <label className="block">
-          <span className="mb-1.5 block text-sm font-medium">Area</span>
+        <label className="contents">
+          <span className="sr-only">Area</span>
           <select
             value={filters.area ?? ""}
             onChange={(event) => update("area", event.target.value)}
-            className="w-full rounded-card border border-line bg-surface px-3 py-2 text-sm"
+            data-active={Boolean(filters.area)}
+            className="filter-pill"
           >
             <option value="">Any area</option>
             {facets.areas.map((area) => (
@@ -73,12 +100,13 @@ export function SearchFilters({
       )}
 
       {facets.languages.length > 0 && (
-        <label className="block">
-          <span className="mb-1.5 block text-sm font-medium">Language</span>
+        <label className="contents">
+          <span className="sr-only">Language spoken</span>
           <select
             value={filters.language ?? ""}
             onChange={(event) => update("language", event.target.value)}
-            className="w-full rounded-card border border-line bg-surface px-3 py-2 text-sm"
+            data-active={Boolean(filters.language)}
+            className="filter-pill"
           >
             <option value="">Any language</option>
             {facets.languages.map((language) => (
@@ -90,49 +118,13 @@ export function SearchFilters({
         </label>
       )}
 
-      {/* Verification gets a switch rather than another dropdown. It is the
-          filter families reach for first, and a switch reads as on/off at a
-          glance where a fourth identical <select> disappears into the stack.
-          role="switch" keeps it a single announced control. */}
-      <div className="rounded-card border border-brand-100 bg-brand-50 p-3">
-        <div className="flex items-start justify-between gap-3">
-          <span className="min-w-0">
-            <span id={verifiedLabelId} className="block text-sm font-medium text-ink">
-              Verified only
-            </span>
-            <span className="mt-0.5 block text-xs text-ink-soft">
-              Providers CareConnect has checked.
-            </span>
-          </span>
-
-          <button
-            type="button"
-            role="switch"
-            aria-checked={verifiedOnly}
-            aria-labelledby={verifiedLabelId}
-            onClick={() => update("verified", verifiedOnly ? "any" : "verified")}
-            className={`relative mt-0.5 inline-flex h-6 w-11 shrink-0 rounded-full border transition-colors ${
-              verifiedOnly
-                ? "border-brand-600 bg-brand-600"
-                : "border-line-strong bg-surface-sunk"
-            }`}
-          >
-            <span
-              aria-hidden="true"
-              className={`absolute top-0.5 size-4.5 rounded-full bg-white shadow-soft transition-[left] duration-200 ${
-                verifiedOnly ? "left-[1.375rem]" : "left-0.5"
-              }`}
-            />
-          </button>
-        </div>
-      </div>
-
-      <label className="block">
-        <span className="mb-1.5 block text-sm font-medium">Listing</span>
+      <label className="contents">
+        <span className="sr-only">Listing tier</span>
         <select
           value={filters.tier ?? "any"}
           onChange={(event) => update("tier", event.target.value)}
-          className="w-full rounded-card border border-line bg-surface px-3 py-2 text-sm"
+          data-active={Boolean(filters.tier && filters.tier !== "any")}
+          className="filter-pill"
         >
           <option value="any">All listings</option>
           <option value="premium">Premium</option>
@@ -140,10 +132,20 @@ export function SearchFilters({
         </select>
       </label>
 
-      <p className="border-t border-line-soft pt-4 text-xs text-ink-faint">
-        Listing tier affects where a provider appears in results. It is not a measure
-        of care quality or verification.
-      </p>
-    </aside>
+      {hasFilters && (
+        <button
+          type="button"
+          onClick={() => {
+            const params = new URLSearchParams();
+            if (filters.city) params.set("city", filters.city);
+            if (filters.service) params.set("service", filters.service);
+            router.push(`/search?${params.toString()}`, { scroll: false });
+          }}
+          className="ms-1 text-sm text-brand-700 underline underline-offset-2"
+        >
+          Clear all
+        </button>
+      )}
+    </div>
   );
 }

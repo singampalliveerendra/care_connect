@@ -1,8 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { OAUTH_PROVIDERS } from "@/lib/oauth";
+import { requestOrigin } from "@/lib/site-url";
 import { createClient } from "@/lib/supabase/server";
 import { providerRegistrationSchema } from "@/lib/validation";
 
@@ -85,6 +88,41 @@ export async function authenticate(
   return mode === "signup" ? signUp(formData) : signIn(formData);
 }
 
+/**
+ * Starts a Google sign-in.
+ *
+ * Supabase hands back the provider's consent URL rather than redirecting for
+ * us, so the action finishes with `redirect(data.url)`. Where the user lands
+ * afterwards is decided in `/auth/callback`, which is the only place that
+ * knows whether they already have a listing.
+ */
+export async function signInWithProvider(formData: FormData) {
+  const candidate = String(formData.get("provider") ?? "");
+  // Matched against the allow-list so an unknown value posted to the action
+  // can never be forwarded to Supabase.
+  const provider = OAUTH_PROVIDERS.find((name) => name === candidate);
+  const rawNext = String(formData.get("next") ?? "");
+  // Only ever bounce back into the provider portal — an open redirect here
+  // would hand an attacker a link that leaves our domain carrying a session.
+  const next = rawNext.startsWith("/provider") ? rawNext : "/provider/dashboard";
+
+  if (!provider) redirect("/provider/login?error=oauth");
+
+  const supabase = await createClient();
+  const origin = requestOrigin(await headers());
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider,
+    options: {
+      redirectTo: `${origin}/auth/callback?next=${encodeURIComponent(next)}`,
+    },
+  });
+
+  if (error || !data.url) redirect("/provider/login?error=oauth");
+
+  redirect(data.url);
+}
+
 export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
@@ -113,10 +151,13 @@ export async function registerProvider(
       .filter(Boolean),
     languages: formData.getAll("languages"),
     phone: formData.get("phone"),
+    whatsapp: formData.get("whatsapp") ?? "",
     email: formData.get("email"),
     website: formData.get("website") ?? "",
     address: formData.get("address") ?? "",
     addressIsPublic: formData.get("addressIsPublic") === "on",
+    latitude: formData.get("latitude") ?? "",
+    longitude: formData.get("longitude") ?? "",
     pricingBand: formData.get("pricingBand") || undefined,
     establishedYear: formData.get("establishedYear") || undefined,
     staffSize: formData.get("staffSize") || undefined,
@@ -147,10 +188,13 @@ export async function registerProvider(
       areas_covered: input.areasCovered,
       languages: input.languages,
       phone: input.phone,
+      whatsapp: input.whatsapp ?? null,
       email: input.email,
       website: input.website ?? null,
       address: input.address ?? null,
       address_is_public: input.addressIsPublic,
+      latitude: input.latitude ?? null,
+      longitude: input.longitude ?? null,
       pricing_band: input.pricingBand ?? null,
       established_year: input.establishedYear ?? null,
       staff_size: input.staffSize ?? null,

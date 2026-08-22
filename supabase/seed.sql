@@ -97,6 +97,24 @@ from (values
 ) as v(name, slug, description, city_slug, areas, langs, phone, email, website, band, est, staff, status, verif, tier)
 join cities ct on ct.slug = v.city_slug;
 
+-- Every demo listing answers WhatsApp on the number it takes calls on, which is
+-- the ordinary case for a small provider. Real listings set this themselves
+-- during registration, where the two numbers can differ.
+update providers set whatsapp = phone where whatsapp is null;
+
+-- A few dropped pins, so the directory has "Directions" links to show. Real
+-- coordinates come from a provider standing at their own gate; these are
+-- approximate points around Visakhapatnam and are demo data like the rest.
+update providers set latitude = v.lat, longitude = v.lng
+from (values
+  ('sagar-home-care-services', 17.730700, 83.312400),
+  ('coastal-nursing-home',     17.712300, 83.317800),
+  ('green-meadows-assisted',   17.813500, 83.360200),
+  ('sea-breeze-senior-living', 17.780900, 83.383600),
+  ('shanti-palliative',        17.716400, 83.322900)
+) as v(slug, lat, lng)
+where providers.slug = v.slug;
+
 -- ---------------------------------------------------------------- provider ↔ service links
 
 insert into provider_services (provider_id, service_id)

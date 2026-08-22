@@ -17,7 +17,7 @@ const concerns = [
   {
     title: "You can't visit to check them out",
     answer:
-      "Every listing shows exactly which checks CareConnect has completed, and what each check means. No vague trust badges.",
+      "Every listing shows exactly which checks Care Connect has completed, and what each check means. No vague trust badges.",
   },
   {
     title: "The time difference makes calls hard",

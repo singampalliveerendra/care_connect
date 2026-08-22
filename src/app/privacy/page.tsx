@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Privacy policy",
-  description: "How CareConnect India collects, uses and protects your information.",
+  description: "How Care Connect collects, uses and protects your information.",
   alternates: { canonical: "/privacy" },
 };
 
@@ -36,7 +36,7 @@ export default function PrivacyPage() {
           <h2 className="text-xl text-ink">Who sees it</h2>
           <p className="mt-2">
             Your care request is shared with the single provider you chose to contact. It
-            is not published, not sold, and not shared with other providers. CareConnect
+            is not published, not sold, and not shared with other providers. Care Connect
             staff can access requests to operate and support the service.
           </p>
         </section>
@@ -45,7 +45,7 @@ export default function PrivacyPage() {
           <h2 className="text-xl text-ink">How it&rsquo;s protected</h2>
           <p className="mt-2">
             Requests are stored in an access-controlled database. Only the provider you
-            contacted and authorised CareConnect staff can read them. Administrative
+            contacted and authorised Care Connect staff can read them. Administrative
             actions on records are logged.
           </p>
         </section>

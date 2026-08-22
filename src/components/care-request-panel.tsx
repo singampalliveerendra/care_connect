@@ -61,7 +61,7 @@ export function CareRequestPanel({ facts, verified, ...enquiry }: Props) {
         {verified && (
           <p className="mt-4 flex items-center gap-2 border-t border-line-soft pt-4 text-sm text-success-700">
             <ShieldCheck className="size-4 shrink-0" />
-            Verified by CareConnect
+            Verified by Care Connect
           </p>
         )}
 

@@ -29,7 +29,7 @@ function Icon({ children, ...props }: IconProps & { children: React.ReactNode })
 
 /* ----------------------------------------------------------------- brand */
 
-/** The CareConnect mark: two arcs leaning into each other, forming a heart
+/** The Care Connect mark: two arcs leaning into each other, forming a heart
  *  from a handshake. Used at every size, so it carries no fine detail. */
 export function Logomark({ className }: { className?: string }) {
   return (
@@ -326,6 +326,53 @@ export function Inbox(props: IconProps) {
   );
 }
 
+/* ------------------------------------------------- directory actions */
+
+/**
+ * WhatsApp is the exception to the house style: it is a third-party mark that
+ * people recognise by its exact silhouette, so it is drawn as a solid glyph on
+ * the official geometry rather than restroked to match the set. Filling with
+ * `currentColor` keeps it usable on both the white and the green button.
+ */
+export function WhatsApp({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className}>
+      <path d="M12.04 2.4a9.5 9.5 0 0 0-8.1 14.4L2.4 21.6l4.9-1.5a9.5 9.5 0 1 0 4.74-17.7Zm0 1.72a7.78 7.78 0 1 1-3.98 14.47l-.3-.18-2.9.88.9-2.82-.2-.31A7.78 7.78 0 0 1 12.04 4.12Zm-3.5 3.6c-.17 0-.44.06-.67.3-.23.25-.88.85-.88 2.08s.9 2.41 1.03 2.58c.13.16 1.75 2.79 4.32 3.8 2.13.83 2.57.67 3.03.63.46-.05 1.5-.61 1.71-1.2.21-.6.21-1.1.15-1.21-.07-.1-.24-.17-.5-.3-.25-.13-1.5-.74-1.73-.82-.23-.09-.4-.13-.57.12-.17.26-.65.83-.8 1-.15.16-.29.19-.54.06-.25-.12-1.07-.4-2.04-1.26-.75-.67-1.26-1.5-1.41-1.75-.15-.25-.02-.39.11-.51.11-.11.25-.3.38-.44.12-.15.16-.25.25-.42.08-.17.04-.32-.02-.44-.06-.13-.56-1.37-.77-1.87-.2-.49-.4-.42-.55-.43h-.47Z" />
+    </svg>
+  );
+}
+
+/** A handset in a filled disc — the "call now" affordance on a listing needs
+ *  more weight than the outline Phone used in body copy. */
+export function PhoneCall(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
+      <path d="M6.6 3.2h2.2a1.7 1.7 0 0 1 1.7 1.5c.1.9.3 1.7.6 2.5a1.7 1.7 0 0 1-.4 1.8l-1 1a13.7 13.7 0 0 0 5.3 5.3l1-1a1.7 1.7 0 0 1 1.8-.4c.8.3 1.6.5 2.5.6a1.7 1.7 0 0 1 1.5 1.7v2.2a1.8 1.8 0 0 1-2 1.8A17.6 17.6 0 0 1 4.8 5.2a1.8 1.8 0 0 1 1.8-2Z" />
+    </svg>
+  );
+}
+
+/** Arrow-in-a-pin: opens the listing's dropped coordinates in a maps app. */
+export function Directions(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11Z" />
+      <path d="m9.4 10.6 5.4-2.2-2.2 5.4-1-2.2-2.2-1Z" />
+    </Icon>
+  );
+}
+
+/** Sliders — the filter bar's "all filters" control. */
+export function Filter(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M4 7.2h10M17.6 7.2H20M4 16.8h2.4M10 16.8h10" />
+      <circle cx="15.6" cy="7.2" r="2.2" />
+      <circle cx="8.2" cy="16.8" r="2.2" />
+    </Icon>
+  );
+}
+
 /* --------------------------------------------------- category → icon map */
 
 const CATEGORY_ICONS: Record<string, (props: IconProps) => React.ReactElement> = {
@@ -346,4 +393,35 @@ export function CategoryIcon({
 }: IconProps & { slug: string }) {
   const Glyph = CATEGORY_ICONS[slug] ?? HomeCare;
   return <Glyph {...props} />;
+}
+
+/* --------------------------------------------------------- social sign-in */
+
+/**
+ * The Google mark. Like WhatsApp above it is a third-party logo, so it keeps
+ * its official geometry and its own colours — Google's brand terms require the
+ * mark to be reproduced exactly, and a recoloured sign-in button is the
+ * fastest way to make a login page look like a phishing page.
+ */
+export function Google({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className}>
+      <path
+        fill="#4285F4"
+        d="M23.5 12.27c0-.83-.07-1.62-.21-2.39H12v4.51h6.45a5.5 5.5 0 0 1-2.39 3.62v3h3.86c2.26-2.08 3.56-5.15 3.56-8.74Z"
+      />
+      <path
+        fill="#34A853"
+        d="M12 24c3.23 0 5.94-1.07 7.92-2.9l-3.86-3c-1.07.72-2.44 1.15-4.06 1.15-3.12 0-5.76-2.1-6.7-4.94H1.3v3.1A11.99 11.99 0 0 0 12 24Z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M5.3 14.31a7.2 7.2 0 0 1 0-4.61v-3.1H1.3a12 12 0 0 0 0 10.81l4-3.1Z"
+      />
+      <path
+        fill="#EA4335"
+        d="M12 4.75c1.76 0 3.34.61 4.58 1.8l3.43-3.43C17.94 1.18 15.23 0 12 0 7.3 0 3.24 2.7 1.3 6.6l4 3.1C6.24 6.85 8.88 4.75 12 4.75Z"
+      />
+    </svg>
+  );
 }

@@ -15,7 +15,7 @@ import {
   ShieldCheck,
   Users,
 } from "@/components/icons";
-import { ScopeDisclaimer } from "@/components/scope-disclaimer";
+// import { ScopeDisclaimer } from "@/components/scope-disclaimer";
 import { SearchBar } from "@/components/search-bar";
 import { VERIFICATION } from "@/lib/domain";
 import { getCities, getCityProviderCounts, getServiceCatalogue, getServices } from "@/lib/queries";
@@ -74,12 +74,18 @@ export default async function HomePage() {
         />
         <div aria-hidden="true" className="grain-layer" />
 
-        <div className="relative mx-auto max-w-6xl px-5 py-20 sm:py-28">
+        <div className="relative mx-auto max-w-6xl px-5 pb-20 pt-8 sm:pb-28 sm:pt-10">
+          {/* The search bar leads the hero — it is the only thing on this page
+              a worried family actually needs, so it sits above the fold and
+              above the headline rather than under it. */}
+          <div className="animate-fade-rise mx-auto max-w-3xl">
+            <SearchBar cities={cities} services={services} />
+          </div>
+
           {/* Headline and mark sit side by side from lg up. Below that the mark
-              drops under the copy at a reduced size — a full-width square here
-              would push the search bar off the fold, and the search bar is the
-              only thing on this page a worried family actually needs. */}
-          <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_auto]">
+              drops under the copy at a reduced size — a full-width square would
+              push everything under it far off the fold. */}
+          <div className="mt-4 grid items-center gap-10 sm:mt-5 lg:grid-cols-[minmax(0,1fr)_auto]">
             <div>
               <p className="eyebrow animate-fade-rise">Aged care across India</p>
 
@@ -90,11 +96,11 @@ export default async function HomePage() {
                 </em>
               </h1>
 
-              <p className="animate-fade-rise mt-6 max-w-2xl text-lg leading-relaxed text-ink-soft">
+              {/* <p className="animate-fade-rise mt-6 max-w-2xl text-lg leading-relaxed text-ink-soft">
                 Compare aged-care providers in your parents&rsquo; city, see exactly what
                 has been verified, and send one structured care request that reaches
                 them directly.
-              </p>
+              </p> */}
             </div>
 
             <Image
@@ -108,12 +114,8 @@ export default async function HomePage() {
             />
           </div>
 
-          <div className="animate-fade-rise mt-10 max-w-3xl">
-            <SearchBar cities={cities} services={services} />
-          </div>
-
-          {/* Trust banner. This sits directly under the search because the
-              question a stressed family is actually asking at this moment is
+          {/* Trust banner. This closes the hero because the question a
+              stressed family is actually asking at this moment is
               not "can I search" but "can I trust this". Three claims, each one
               a link to the page that substantiates it — an unbacked trust
               badge is worse than none. */}
@@ -186,7 +188,7 @@ export default async function HomePage() {
             still forming a model of what this product is. Discovering the
             boundary later — after sending a request — costs more trust than
             naming it here. */}
-        <ScopeDisclaimer className="mt-14" />
+        {/* <ScopeDisclaimer className="mt-14" /> */}
       </section>
 
       {/* ---------------------------------------------------------- cities */}

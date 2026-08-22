@@ -9,9 +9,12 @@ export const metadata: Metadata = {
 export default async function EnquirySentPage({
   searchParams,
 }: {
-  searchParams: Promise<{ provider?: string }>;
+  searchParams: Promise<{ provider?: string; count?: string }>;
 }) {
-  const { provider } = await searchParams;
+  const { provider, count } = await searchParams;
+  // The sidebar form sends one request to several providers, so it reports a
+  // count where the profile form reports a name.
+  const sentToMany = Number(count) > 1;
 
   return (
     <div className="mx-auto max-w-2xl px-5 py-20 text-center">
@@ -29,6 +32,11 @@ export default async function EnquirySentPage({
             <strong className="font-medium text-ink">{provider}</strong> has your request
             and your contact number.
           </>
+        ) : sentToMany ? (
+          <>
+            <strong className="font-medium text-ink">{count} providers</strong> have your
+            request and your contact number.
+          </>
         ) : (
           <>The provider has your request and your contact number.</>
         )}
@@ -41,16 +49,18 @@ export default async function EnquirySentPage({
         <ol className="mt-4 space-y-3 text-sm text-ink-soft">
           <li className="flex gap-3">
             <span className="font-medium text-brand-600">1</span>
-            The provider reviews what you&rsquo;ve told them about your parent&rsquo;s needs.
+            {sentToMany ? "Each provider" : "The provider"} reviews what you&rsquo;ve told
+            them about your parent&rsquo;s needs.
           </li>
           <li className="flex gap-3">
             <span className="font-medium text-brand-600">2</span>
-            They contact you directly on the number you gave, usually within a day or two.
+            They contact you directly on the number you gave, usually within a day or
+            two.{sentToMany ? " Expect more than one call." : ""}
           </li>
           <li className="flex gap-3">
             <span className="font-medium text-brand-600">3</span>
-            You discuss details, cost and timing with them &mdash; CareConnect isn&rsquo;t
-            part of that conversation.
+            You discuss details, cost and timing with {sentToMany ? "whoever suits you" : "them"}
+            &mdash; Care Connect isn&rsquo;t part of that conversation.
           </li>
         </ol>
       </div>

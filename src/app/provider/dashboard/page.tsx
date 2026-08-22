@@ -56,7 +56,7 @@ export default async function ProviderDashboardPage() {
   if (!provider) {
     return (
       <div className="mx-auto max-w-2xl px-5 py-16">
-        <h1 className="text-3xl">Welcome to CareConnect</h1>
+        <h1 className="text-3xl">Welcome to Care Connect</h1>
         <p className="mt-3 text-ink-soft">
           You don&rsquo;t have a listing yet. Create one so families in your city can find you.
         </p>

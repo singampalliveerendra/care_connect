@@ -19,7 +19,7 @@ const columns = [
     ],
   },
   {
-    title: "CareConnect",
+    title: "Care Connect",
     links: [
       { href: "/about", label: "About" },
       { href: "/contact", label: "Contact" },
@@ -37,15 +37,15 @@ const columns = [
 export function SiteFooter() {
   return (
     <footer className="border-t border-line bg-surface-alt">
-      <div className="mx-auto grid max-w-6xl gap-10 px-5 py-14 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mx-auto grid max-w-7xl gap-10 px-5 py-14 sm:grid-cols-2 lg:grid-cols-4">
         <div>
           <Link
             href="/"
             className="inline-flex items-center gap-2.5 text-brand-700"
-            aria-label="CareConnect India — home"
+            aria-label="Care Connect — home"
           >
             <Logomark className="size-8" />
-            <span className="font-display text-lg leading-none">CareConnect India</span>
+            <span className="font-display text-lg leading-none">Care Connect</span>
           </Link>
           <p className="mt-4 max-w-xs text-sm leading-relaxed text-ink-soft">
             Your parents are in India. Their care doesn&rsquo;t have to be.
@@ -74,13 +74,13 @@ export function SiteFooter() {
       </div>
 
       <div className="border-t border-line">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-5 py-6 text-xs text-ink-faint">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-5 py-6 text-xs text-ink-faint">
           <p className="max-w-2xl leading-relaxed">
-            CareConnect helps families discover and contact care providers. We are not a
+            Care Connect helps families discover and contact care providers. We are not a
             care provider ourselves, and we do not supervise the care that providers
             deliver.
           </p>
-          <p>&copy; {new Date().getFullYear()} CareConnect India</p>
+          <p>&copy; {new Date().getFullYear()} Care Connect</p>
         </div>
       </div>
     </footer>

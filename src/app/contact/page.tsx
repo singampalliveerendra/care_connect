@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Contact CareConnect",
-  description: "Get in touch with the CareConnect India team.",
+  title: "Contact Care Connect",
+  description: "Get in touch with the Care Connect team.",
   alternates: { canonical: "/contact" },
 };
 
@@ -42,7 +42,7 @@ export default function ContactPage() {
       </dl>
 
       <p className="mt-10 rounded-card border border-accent-500/30 bg-accent-100 px-4 py-3 text-sm text-ink-soft">
-        CareConnect is not an emergency service. If someone needs urgent medical help, call
+        Care Connect is not an emergency service. If someone needs urgent medical help, call
         your local emergency number or go to the nearest hospital.
       </p>
     </div>

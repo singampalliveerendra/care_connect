@@ -8,7 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 export const metadata: Metadata = {
   title: "List your care service",
   description:
-    "Create a CareConnect listing so families searching in your city can find and contact you.",
+    "Create a Care Connect listing so families searching in your city can find and contact you.",
   robots: { index: false },
 };
 

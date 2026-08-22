@@ -3,9 +3,18 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { MapPin, Search, Sparkle } from "@/components/icons";
+import { MapPin, Search } from "@/components/icons";
 import type { City, Service } from "@/lib/database.types";
 
+/**
+ * Location on the left, what you need on the right, orange button to run it.
+ *
+ * The two fields are visually separate boxes rather than one bar: on a phone
+ * they stack into two obvious questions, and on desktop the split makes it
+ * clear that changing the city and changing the service are different acts.
+ * Orange appears exactly once on the page, here — it is the control everything
+ * else on the screen depends on.
+ */
 export function SearchBar({
   cities,
   services,
@@ -30,46 +39,43 @@ export function SearchBar({
   }
 
   return (
-    <form
-      onSubmit={submit}
-      className="rounded-panel border border-line bg-surface p-2 shadow-float"
-    >
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-stretch">
-        <label className="flex flex-1 items-center gap-3 rounded-card px-3 py-2 transition-colors focus-within:bg-brand-50 sm:py-1.5">
-          <MapPin className="size-5 shrink-0 text-brand-500" />
-          <span className="min-w-0 flex-1">
-            <span className="block text-xs font-medium uppercase tracking-wide text-ink-faint">
-              City
-            </span>
-            <select
-              value={city}
-              onChange={(event) => setCity(event.target.value)}
-              className="-ms-1 w-full cursor-pointer appearance-none bg-transparent px-1 py-0.5 font-medium text-ink focus:outline-none"
-            >
-              <option value="">All active cities</option>
-              {cities.map((option) => (
-                <option key={option.id} value={option.slug}>
-                  {option.name}
-                </option>
-              ))}
-            </select>
+    <form onSubmit={submit} className="flex flex-col gap-2.5 sm:flex-row">
+      <label className="flex flex-1 items-center gap-2.5 rounded-card border border-line-strong bg-surface px-3.5 py-2.5 transition-colors focus-within:border-brand-600 sm:max-w-xs">
+        <MapPin className="size-5 shrink-0 text-accent-500" />
+        <span className="min-w-0 flex-1">
+          <span className="block text-[0.6875rem] font-semibold uppercase tracking-wide text-ink-faint">
+            Location
           </span>
-        </label>
+          <select
+            value={city}
+            onChange={(event) => setCity(event.target.value)}
+            aria-label="City"
+            className="-ms-0.5 w-full cursor-pointer appearance-none bg-transparent py-0.5 font-medium text-ink focus:outline-none"
+          >
+            <option value="">All active cities</option>
+            {cities.map((option) => (
+              <option key={option.id} value={option.slug}>
+                {option.name}
+              </option>
+            ))}
+          </select>
+        </span>
+      </label>
 
-        <span aria-hidden="true" className="hidden w-px bg-line-soft sm:block" />
-
-        <label className="flex flex-1 items-center gap-3 rounded-card px-3 py-2 transition-colors focus-within:bg-brand-50 sm:py-1.5">
-          <Sparkle className="size-5 shrink-0 text-brand-500" />
+      <div className="flex flex-1 gap-2.5">
+        <label className="flex flex-1 items-center gap-2.5 rounded-card border border-line-strong bg-surface px-3.5 py-2.5 transition-colors focus-within:border-brand-600">
+          <Search className="size-5 shrink-0 text-ink-faint" />
           <span className="min-w-0 flex-1">
-            <span className="block text-xs font-medium uppercase tracking-wide text-ink-faint">
-              Type of care
+            <span className="block text-[0.6875rem] font-semibold uppercase tracking-wide text-ink-faint">
+              What do you need?
             </span>
             <select
               value={service}
               onChange={(event) => setService(event.target.value)}
-              className="-ms-1 w-full cursor-pointer appearance-none bg-transparent px-1 py-0.5 font-medium text-ink focus:outline-none"
+              aria-label="Type of care"
+              className="-ms-0.5 w-full cursor-pointer appearance-none bg-transparent py-0.5 font-medium text-ink focus:outline-none"
             >
-              <option value="">Any service</option>
+              <option value="">Any type of care</option>
               {services.map((option) => (
                 <option key={option.id} value={option.slug}>
                   {option.name}
@@ -79,9 +85,9 @@ export function SearchBar({
           </span>
         </label>
 
-        <button type="submit" className="btn btn-primary px-6 sm:px-7">
+        <button type="submit" className="btn btn-search px-6 sm:px-8">
           <Search className="size-4.5" />
-          Find care
+          <span className="hidden sm:inline">Search</span>
         </button>
       </div>
     </form>

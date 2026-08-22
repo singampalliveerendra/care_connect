@@ -3,7 +3,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { CareRequestPanel } from "@/components/care-request-panel";
+import { Directions, PhoneCall, WhatsApp } from "@/components/icons";
 import { VerificationBadge } from "@/components/verification-badge";
+import { formatPhone, mapsHref, telHref, whatsappHref } from "@/lib/contact";
 import { PRICING_BAND_LABEL, VERIFICATION } from "@/lib/domain";
 import { getProviderBySlug, getIndexableProviderSlugs } from "@/lib/queries";
 
@@ -43,6 +45,13 @@ export default async function ProviderPage({ params }: PageProps) {
   if (!provider) notFound();
 
   const verification = VERIFICATION[provider.verification];
+  const whatsapp = provider.whatsapp
+    ? whatsappHref(
+        provider.whatsapp,
+        `Hello ${provider.name}, I found you on Care Connect and would like to ask about care for a family member.`,
+      )
+    : null;
+  const directions = mapsHref(provider.latitude, provider.longitude);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -51,6 +60,15 @@ export default async function ProviderPage({ params }: PageProps) {
     description: provider.description ?? undefined,
     telephone: provider.phone,
     email: provider.email,
+    ...(provider.latitude != null && provider.longitude != null
+      ? {
+          geo: {
+            "@type": "GeoCoordinates",
+            latitude: provider.latitude,
+            longitude: provider.longitude,
+          },
+        }
+      : {}),
     url: provider.website ?? undefined,
     address: {
       "@type": "PostalAddress",
@@ -121,12 +139,48 @@ export default async function ProviderPage({ params }: PageProps) {
             )}
           </div>
 
-          <a
-            href="#enquire"
-            className="mt-6 inline-block rounded-card bg-brand-600 px-5 py-2.5 font-medium text-white transition-colors hover:bg-brand-700"
-          >
-            Send a care request
-          </a>
+          {/* The three ways to make contact, in the order families use them.
+              The number is printed rather than hidden behind a "show" click —
+              a listing that makes you work for a phone number reads as one
+              that is farming your details. */}
+          <div className="mt-6 flex flex-wrap gap-2">
+            <a
+              href={telHref(provider.phone)}
+              className="btn btn-call"
+              aria-label={`Call ${provider.name} on ${formatPhone(provider.phone)}`}
+            >
+              <PhoneCall className="size-4" />
+              {formatPhone(provider.phone)}
+            </a>
+
+            {whatsapp && (
+              <a
+                href={whatsapp}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-whatsapp"
+              >
+                <WhatsApp className="size-4" />
+                WhatsApp
+              </a>
+            )}
+
+            <a href="#enquire" className="btn btn-secondary">
+              Send a care request
+            </a>
+
+            {directions && (
+              <a
+                href={directions}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-ghost"
+              >
+                <Directions className="size-4" />
+                Directions
+              </a>
+            )}
+          </div>
         </header>
 
         <div className="grid gap-10 py-8 lg:grid-cols-[1fr_18rem]">
@@ -158,11 +212,26 @@ export default async function ProviderPage({ params }: PageProps) {
                 <div className="flex gap-3">
                   <dt className="w-24 shrink-0 text-ink-faint">Phone</dt>
                   <dd>
-                    <a href={`tel:${provider.phone.replace(/\s/g, "")}`} className="text-brand-700">
-                      {provider.phone}
+                    <a href={telHref(provider.phone)} className="text-brand-700">
+                      {formatPhone(provider.phone)}
                     </a>
                   </dd>
                 </div>
+                {provider.whatsapp && (
+                  <div className="flex gap-3">
+                    <dt className="w-24 shrink-0 text-ink-faint">WhatsApp</dt>
+                    <dd>
+                      <a
+                        href={whatsapp ?? telHref(provider.whatsapp)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-brand-700"
+                      >
+                        {formatPhone(provider.whatsapp)}
+                      </a>
+                    </dd>
+                  </div>
+                )}
                 <div className="flex gap-3">
                   <dt className="w-24 shrink-0 text-ink-faint">Email</dt>
                   <dd>

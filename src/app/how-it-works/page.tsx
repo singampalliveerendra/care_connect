@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ScopeDisclaimer } from "@/components/scope-disclaimer";
 
 export const metadata: Metadata = {
-  title: "How CareConnect works",
+  title: "How Care Connect works",
   description:
     "Search providers in your parents' city, compare what has been verified, and send one structured care request that reaches the provider directly.",
   alternates: { canonical: "/how-it-works" },
@@ -36,7 +36,7 @@ const steps = [
 export default function HowItWorksPage() {
   return (
     <div className="mx-auto max-w-3xl px-5 py-16">
-      <h1 className="text-4xl">How CareConnect works</h1>
+      <h1 className="text-4xl">How Care Connect works</h1>
       <p className="mt-4 text-lg text-ink-soft">
         We help you find and contact aged-care providers. We don&rsquo;t provide care
         ourselves, and we don&rsquo;t take a cut of what you pay a provider.
