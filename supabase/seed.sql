@@ -7,12 +7,12 @@
 
 insert into cities (name, slug, state, wave, is_active, latitude, longitude) values
   ('Visakhapatnam','visakhapatnam','Andhra Pradesh','test_bed', true, 17.686800, 83.218500),
-  ('Bangalore',    'bangalore',    'Karnataka',     'wave_1',   true, 12.971600, 77.594600),
-  ('Hyderabad',    'hyderabad',    'Telangana',     'wave_1',   true, 17.385000, 78.486700),
-  ('Chennai',      'chennai',      'Tamil Nadu',    'wave_1',   true, 13.082700, 80.270700),
-  ('Kochi',        'kochi',        'Kerala',        'wave_1',   true,  9.931200, 76.267300),
-  ('Coimbatore',   'coimbatore',   'Tamil Nadu',    'wave_1',   true, 11.016800, 76.955800),
-  ('Pune',         'pune',         'Maharashtra',   'wave_1',   true, 18.520400, 73.856700),
+  ('Bangalore',    'bangalore',    'Karnataka',     'wave_1',   false, 12.971600, 77.594600),
+  ('Hyderabad',    'hyderabad',    'Telangana',     'wave_1',   false, 17.385000, 78.486700),
+  ('Chennai',      'chennai',      'Tamil Nadu',    'wave_1',   false, 13.082700, 80.270700),
+  ('Kochi',        'kochi',        'Kerala',        'wave_1',   false,  9.931200, 76.267300),
+  ('Coimbatore',   'coimbatore',   'Tamil Nadu',    'wave_1',   false, 11.016800, 76.955800),
+  ('Pune',         'pune',         'Maharashtra',   'wave_1',   false, 18.520400, 73.856700),
   ('Ahmedabad',    'ahmedabad',    'Gujarat',       'wave_2',   false, 23.022500, 72.571400),
   ('Chandigarh',   'chandigarh',   'Chandigarh',    'wave_2',   false, 30.733300, 76.779400),
   ('Mysore',       'mysore',       'Karnataka',     'wave_2',   false, 12.295800, 76.639400),

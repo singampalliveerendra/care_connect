@@ -9,11 +9,8 @@ import {
   IdCard,
   Lock,
   MapPin,
-  Message,
   Plane,
-  Search,
   ShieldCheck,
-  Users,
 } from "@/components/icons";
 // import { ScopeDisclaimer } from "@/components/scope-disclaimer";
 import { SearchBar } from "@/components/search-bar";
@@ -22,6 +19,7 @@ import { getCities, getCityProviderCounts, getServiceCatalogue, getServices } fr
 
 export const revalidate = 300;
 
+/* Hidden with the three-steps section above.
 const STEPS = [
   {
     Glyph: Search,
@@ -39,6 +37,7 @@ const STEPS = [
     body: "Your request goes straight to the providers you chose. They contact you directly to talk it through.",
   },
 ];
+*/
 
 /** Icons for the badge explainer, keyed to the levels the brief allows us to
  *  display. Kept beside VERIFICATION rather than inside it so the domain layer
@@ -109,17 +108,17 @@ export default async function HomePage() {
               width={1254}
               height={1254}
               priority
-              sizes="(min-width: 1024px) 26rem, 15rem"
-              className="animate-fade-rise mx-auto w-60 max-w-full justify-self-center lg:w-[26rem] lg:justify-self-end"
+              sizes="(min-width: 1024px) 13rem, 7.5rem"
+              className="animate-fade-rise mx-auto w-[7.5rem] max-w-full justify-self-center lg:w-[13rem] lg:justify-self-end"
             />
           </div>
 
           {/* Trust banner. This closes the hero because the question a
               stressed family is actually asking at this moment is
-              not "can I search" but "can I trust this". Three claims, each one
+              not "can I search" but "can I trust this". Each claim is
               a link to the page that substantiates it — an unbacked trust
               badge is worse than none. */}
-          <ul className="stagger mt-10 grid gap-4 sm:grid-cols-3">
+          <ul className="stagger mt-10 grid gap-4 sm:grid-cols-2">
             {[
               {
                 Glyph: ShieldCheck,
@@ -132,12 +131,6 @@ export default async function HomePage() {
                 title: "Your privacy protected",
                 body: "Your details reach only the providers you choose. Never sold, never broadcast.",
                 href: "/privacy",
-              },
-              {
-                Glyph: Plane,
-                title: "Built for NRI families",
-                body: `Arrange care across ${cities.length} cities from any timezone.`,
-                href: "/nri",
               },
             ].map(({ Glyph, title, body, href }) => (
               <li key={title}>
@@ -155,7 +148,8 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* --------------------------------------------------------- 3 steps */}
+      {/* ----------------------------------------------- 3 steps (hidden)
+      {( --------------------------------------------------------- 3 steps )}
       <section className="mx-auto max-w-6xl px-5 py-20">
         <p className="eyebrow">How it works</p>
         <h2 className="mt-3 max-w-2xl text-3xl">
@@ -165,7 +159,7 @@ export default async function HomePage() {
         <ol className="stagger mt-12 grid gap-8 md:grid-cols-3">
           {STEPS.map((step, index) => (
             <li key={step.title} className="relative">
-              {/* The rule connects the steps into a sequence on wide screens. */}
+              {( The rule connects the steps into a sequence on wide screens. )}
               {index < STEPS.length - 1 && (
                 <span
                   aria-hidden="true"
@@ -184,12 +178,13 @@ export default async function HomePage() {
           ))}
         </ol>
 
-        {/* Stating the limits right after the three steps, while the family is
+        {( Stating the limits right after the three steps, while the family is
             still forming a model of what this product is. Discovering the
             boundary later — after sending a request — costs more trust than
-            naming it here. */}
-        {/* <ScopeDisclaimer className="mt-14" /> */}
+            naming it here. )}
+        {( <ScopeDisclaimer className="mt-14" /> )}
       </section>
+      */}
 
       {/* ---------------------------------------------------------- cities */}
       <section className="border-y border-line bg-surface">
