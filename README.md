@@ -1,6 +1,6 @@
-# CareConnect India — MVP
+# Care Connect — MVP
 
-A discovery and lead-generation marketplace for aged care in Indian cities.
+A discovery and lead-generation marketplace for aged care.
 Families search by city and service, compare providers and what has actually been
 verified about them, and send one structured care request that reaches the provider.
 
@@ -100,7 +100,7 @@ traffic (noted in `src/lib/rate-limit.ts`).
 - City × service landing URLs in the sitemap (the SEO engine, brief §14)
 - 18-field structured care request, server-validated, with confirmation page
 - Provider signup, multi-step registration, application status, dashboard, lead inbox
-- NRI landing page, How It Works, About, Contact, Privacy, Terms
+- Families-abroad landing page, How It Works, About, Contact, Privacy, Terms
 
 ## What is not built
 

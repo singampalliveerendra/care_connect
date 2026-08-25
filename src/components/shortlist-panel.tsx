@@ -60,7 +60,7 @@ export function ShortlistPanel({
     if (read("familyName").length < 2) next.familyName = "Enter your name";
     const phone = read("phone");
     if (!phone) next.phone = "Enter a mobile number they can call";
-    else if (!PHONE_RE.test(phone)) next.phone = "Enter a valid Indian mobile number";
+    else if (!PHONE_RE.test(phone)) next.phone = "Enter a valid mobile number";
     if (read("careRequirement").length < 20) {
       next.careRequirement = "A sentence about what's needed helps them answer properly";
     }

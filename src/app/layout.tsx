@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     template: "%s · Care Connect",
   },
   description:
-    "Compare verified aged-care providers across Indian cities, and send one structured care request that reaches them directly.",
+    "Compare verified aged-care providers in your parents' city, and send one structured care request that reaches them directly.",
   openGraph: {
     type: "website",
     siteName: "Care Connect",

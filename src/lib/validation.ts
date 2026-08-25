@@ -16,7 +16,7 @@ const phone = z
   .trim()
   .min(10, "Enter a phone number we can reach you on")
   .max(20)
-  .regex(/^(\+?91[\s-]?)?[6-9]\d{4}[\s-]?\d{5}$/, "Enter a valid Indian mobile number");
+  .regex(/^(\+?91[\s-]?)?[6-9]\d{4}[\s-]?\d{5}$/, "Enter a valid mobile number");
 
 /** Same shape as `phone`, but a listing may simply not have a WhatsApp line. */
 const optionalPhone = z
@@ -27,7 +27,7 @@ const optionalPhone = z
   .transform((v) => v || undefined)
   .refine(
     (v) => v === undefined || /^(\+?91[\s-]?)?[6-9]\d{4}[\s-]?\d{5}$/.test(v),
-    "Enter a valid Indian mobile number, or leave this blank",
+    "Enter a valid mobile number, or leave this blank",
   );
 
 /** A map pin arrives from the browser's geolocation API, so it is a string in

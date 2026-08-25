@@ -86,13 +86,12 @@ export default async function HomePage() {
               push everything under it far off the fold. */}
           <div className="mt-4 grid items-center gap-10 sm:mt-5 lg:grid-cols-[minmax(0,1fr)_auto]">
             <div>
-              <p className="eyebrow animate-fade-rise">Aged care across India</p>
-
-              <h1 className="animate-fade-rise mt-5 text-4xl leading-[1.1] sm:text-6xl">
-                Find care you can trust for your parents,{" "}
+              <h1 className="animate-fade-rise text-4xl leading-[1.1] sm:text-6xl">
+                Find care{" "}
                 <em className="font-normal not-italic text-brand-600">
-                  wherever you are.
-                </em>
+                  you can trust
+                </em>{" "}
+                for your parents.
               </h1>
 
               {/* <p className="animate-fade-rise mt-6 max-w-2xl text-lg leading-relaxed text-ink-soft">
@@ -306,7 +305,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ------------------------------------------------------------- NRI */}
+      {/* --------------------------------------------------------- abroad */}
       <section className="mx-auto max-w-6xl px-5 py-20">
         <div className="relative isolate overflow-hidden rounded-hero bg-brand-800 px-7 py-14 text-ink-invert sm:px-14">
           <div
@@ -321,10 +320,10 @@ export default async function HomePage() {
           <div className="relative max-w-2xl">
             <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-sm text-brand-100">
               <Plane className="size-4" />
-              For NRI families
+              For families living abroad
             </span>
             <h2 className="mt-5 text-3xl text-white sm:text-4xl">
-              Your parents are in India. Their care doesn&rsquo;t have to be your
+              Your parents are back home. Their care doesn&rsquo;t have to be your
               3 a.m. problem.
             </h2>
             <p className="mt-4 leading-relaxed text-brand-100">

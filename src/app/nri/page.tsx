@@ -7,9 +7,9 @@ import { getCities, getServices } from "@/lib/queries";
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: "Arranging care for parents in India from abroad",
+  title: "Arranging care for your parents from abroad",
   description:
-    "For NRI families: compare verified aged-care providers in your parents' Indian city and send a structured care request from anywhere in the world.",
+    "For families living abroad: compare verified aged-care providers in your parents' city and send a structured care request from anywhere in the world.",
   alternates: { canonical: "/nri" },
 };
 
@@ -47,10 +47,10 @@ export default async function NriPage() {
             For families living abroad
           </p>
           <h1 className="mt-4 max-w-3xl text-4xl leading-tight sm:text-5xl">
-            Your parents are in India. Their care doesn&rsquo;t have to be.
+            Your parents are back home. Their care doesn&rsquo;t have to be.
           </h1>
           <p className="mt-5 max-w-2xl text-lg text-ink-soft">
-            Arrange care for your mother or father from Sydney, London, Dubai or Toronto.
+            Arrange care for your mother or father from wherever you live now.
             Compare providers in their city, see what has been verified, and send one
             structured request &mdash; without waiting for a good time to call.
           </p>
@@ -75,7 +75,7 @@ export default async function NriPage() {
 
       <section className="border-t border-line bg-surface">
         <div className="mx-auto max-w-5xl px-5 py-16">
-          <h2 className="text-2xl">Popular searches for NRI families</h2>
+          <h2 className="text-2xl">Popular searches from abroad</h2>
           <ul className="mt-6 flex flex-wrap gap-2">
             {[
               { label: "Home care in Hyderabad", href: "/search?city=hyderabad&service=caregiver" },

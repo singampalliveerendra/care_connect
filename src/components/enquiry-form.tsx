@@ -126,7 +126,7 @@ export function EnquiryForm({
           <Field
             label="Phone number"
             required
-            hint="Indian mobile number the provider can call."
+            hint="A mobile number the provider can call."
             error={errors.phone}
           >
             <input name="phone" type="tel" className={fieldClass} autoComplete="tel" required />

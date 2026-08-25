@@ -12,7 +12,7 @@ export default function PrivacyPage() {
       <p className="rounded-card border border-accent-500/30 bg-accent-100 px-4 py-3 text-sm text-ink-soft">
         <strong className="font-medium text-ink">Draft — pending legal review.</strong> This
         page describes how the product currently handles data. It must be reviewed by a
-        qualified adviser for the Indian operating model before launch.
+        qualified adviser for the local operating model before launch.
       </p>
 
       <h1 className="mt-8 text-4xl">Privacy policy</h1>

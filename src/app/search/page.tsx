@@ -33,14 +33,14 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
   const title = service && city
     ? `${service.name} in ${city.name}`
     : service
-      ? `${service.name} providers across India`
+      ? `${service.name} providers`
       : city
         ? `Aged care providers in ${city.name}`
         : "Search aged care providers";
 
   return {
     title,
-    description: `Compare verified aged-care providers${city ? ` in ${city.name}` : " across India"}${service ? ` offering ${service.name.toLowerCase()}` : ""}, and send a structured care request.`,
+    description: `Compare verified aged-care providers${city ? ` in ${city.name}` : ""}${service ? ` offering ${service.name.toLowerCase()}` : ""}, and send a structured care request.`,
     alternates: { canonical: `/search` },
   };
 }

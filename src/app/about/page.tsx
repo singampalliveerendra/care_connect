@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "About Care Connect",
   description:
-    "Care Connect helps families discover, compare and contact trustworthy aged-care providers across Indian cities.",
+    "Care Connect helps families discover, compare and contact trustworthy aged-care providers in their city.",
   alternates: { canonical: "/about" },
 };
 
@@ -14,7 +14,7 @@ export default function AboutPage() {
 
       <div className="mt-6 space-y-5 text-lg text-ink-soft">
         <p>
-          Finding care for an ageing parent in India is unreasonably hard. Families ask
+          Finding care for an ageing parent is unreasonably hard. Families ask
           around, collect phone numbers, and hope the person who picks up is trustworthy.
           For adult children living in another city &mdash; or another country &mdash; it is
           harder still.

@@ -7,7 +7,7 @@ const columns = [
     title: "Find care",
     links: [
       { href: "/search", label: "Search providers" },
-      { href: "/nri", label: "For NRI families" },
+      { href: "/nri", label: "For families abroad" },
       { href: "/how-it-works", label: "How it works" },
     ],
   },
@@ -48,7 +48,7 @@ export function SiteFooter() {
             <span className="font-display text-lg leading-none">Care Connect</span>
           </Link>
           <p className="mt-4 max-w-xs text-sm leading-relaxed text-ink-soft">
-            Your parents are in India. Their care doesn&rsquo;t have to be.
+            Your parents are back home. Their care doesn&rsquo;t have to be.
           </p>
         </div>
 
