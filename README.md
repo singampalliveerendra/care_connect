@@ -100,7 +100,7 @@ traffic (noted in `src/lib/rate-limit.ts`).
 - City × service landing URLs in the sitemap (the SEO engine, brief §14)
 - 18-field structured care request, server-validated, with confirmation page
 - Provider signup, multi-step registration, application status, dashboard, lead inbox
-- Families-abroad landing page, How It Works, About, Contact, Privacy, Terms
+- Care-at-a-distance landing page, How It Works, About, Contact, Privacy, Terms
 
 ## What is not built
 

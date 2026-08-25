@@ -7,9 +7,9 @@ import { getCities, getServices } from "@/lib/queries";
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: "Arranging care for your parents from abroad",
+  title: "Arranging care for your parents from another city or country",
   description:
-    "For families living abroad: compare verified aged-care providers in your parents' city and send a structured care request from anywhere in the world.",
+    "For families living away from their parents: compare verified aged-care providers in your parents' city and send a structured care request from wherever you are.",
   alternates: { canonical: "/nri" },
 };
 
@@ -20,7 +20,7 @@ const concerns = [
       "Every listing shows exactly which checks Care Connect has completed, and what each check means. No vague trust badges.",
   },
   {
-    title: "The time difference makes calls hard",
+    title: "You can never find a good time to call",
     answer:
       "Send a written care request instead. The provider gets the full picture in one go and replies on your schedule.",
   },
@@ -44,15 +44,16 @@ export default async function NriPage() {
       <section className="border-b border-line bg-surface">
         <div className="mx-auto max-w-5xl px-5 py-16 sm:py-20">
           <p className="text-sm font-medium uppercase tracking-widest text-brand-600">
-            For families living abroad
+            For families at a distance
           </p>
           <h1 className="mt-4 max-w-3xl text-4xl leading-tight sm:text-5xl">
-            Your parents are back home. Their care doesn&rsquo;t have to be.
+            You can&rsquo;t be there every day. Their care shouldn&rsquo;t depend on it.
           </h1>
           <p className="mt-5 max-w-2xl text-lg text-ink-soft">
-            Arrange care for your mother or father from wherever you live now.
-            Compare providers in their city, see what has been verified, and send one
-            structured request &mdash; without waiting for a good time to call.
+            Arrange care for your mother or father from another city or another
+            country. Compare providers in their city, see what has been verified,
+            and send one structured request &mdash; without waiting for a good
+            time to call.
           </p>
 
           <div className="mt-8 max-w-3xl">
@@ -75,7 +76,7 @@ export default async function NriPage() {
 
       <section className="border-t border-line bg-surface">
         <div className="mx-auto max-w-5xl px-5 py-16">
-          <h2 className="text-2xl">Popular searches from abroad</h2>
+          <h2 className="text-2xl">Popular searches</h2>
           <ul className="mt-6 flex flex-wrap gap-2">
             {[
               { label: "Home care in Hyderabad", href: "/search?city=hyderabad&service=caregiver" },

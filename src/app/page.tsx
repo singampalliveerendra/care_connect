@@ -9,7 +9,6 @@ import {
   IdCard,
   Lock,
   MapPin,
-  Plane,
   ShieldCheck,
 } from "@/components/icons";
 // import { ScopeDisclaimer } from "@/components/scope-disclaimer";
@@ -305,7 +304,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* --------------------------------------------------------- abroad */}
+      {/* ------------------------------------------------------- distance */}
       <section className="mx-auto max-w-6xl px-5 py-20">
         <div className="relative isolate overflow-hidden rounded-hero bg-brand-800 px-7 py-14 text-ink-invert sm:px-14">
           <div
@@ -319,20 +318,20 @@ export default async function HomePage() {
 
           <div className="relative max-w-2xl">
             <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-sm text-brand-100">
-              <Plane className="size-4" />
-              For families living abroad
+              <MapPin className="size-4" />
+              For families at a distance
             </span>
             <h2 className="mt-5 text-3xl text-white sm:text-4xl">
-              Your parents are back home. Their care doesn&rsquo;t have to be your
-              3 a.m. problem.
+              You can&rsquo;t be there every day. Their care doesn&rsquo;t have to be
+              your 3 a.m. problem.
             </h2>
             <p className="mt-4 leading-relaxed text-brand-100">
-              Arrange care across time zones: compare providers before you call,
-              send a request with the full picture, and give a local relative a
-              contact they can follow up with.
+              Whether you are a flight or a train ride away: compare providers
+              before you call, send a request with the full picture, and give
+              someone nearby a contact they can follow up with.
             </p>
             <Link href="/nri" className="btn btn-accent mt-8">
-              See how it works from abroad
+              See how it works from anywhere
               <ArrowRight className="size-4" />
             </Link>
           </div>
