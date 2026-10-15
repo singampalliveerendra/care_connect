@@ -6,9 +6,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
    press Submit. Regression for the bug where Submit did nothing because an
    invalid field sat on a hidden step. */
 
-const registerProvider = vi.fn(async () => ({}));
+const registerProvider = vi.fn(async (..._args: unknown[]): Promise<Record<string, unknown>> => ({}));
 vi.mock("@/app/provider/actions", () => ({
-  registerProvider: (...args: unknown[]) => registerProvider(...(args as [])),
+  registerProvider: (...args: unknown[]) => registerProvider(...args),
   resolveMapsLocation: vi.fn(),
 }));
 
@@ -47,7 +47,9 @@ function fillStep3(container: HTMLElement) {
 }
 
 beforeEach(() => {
-  registerProvider.mockClear();
+  registerProvider.mockReset();
+  registerProvider.mockResolvedValue({});
+  localStorage.clear();
   HTMLElement.prototype.scrollIntoView = vi.fn();
 });
 afterEach(cleanup);
@@ -123,5 +125,81 @@ describe("Submit with everything valid", () => {
     expect(data.get("latitude")).toBe("17.671427");
     expect(data.get("longitude")).toBe("83.203612");
     expect(data.get("whatsapp")).toBe("+91 90000 10001");
+  });
+});
+
+describe("existing fields", () => {
+  it("are all present", () => {
+    const { container } = renderForm();
+    for (const name of ["name", "description", "cityId", "serviceIds", "areasCovered", "languages", "pricingBand", "phone", "whatsapp", "email", "website", "address", "addressIsPublic", "location"]) {
+      expect(field(container, name)).not.toBeNull();
+    }
+  });
+
+  it("send no coordinates until a pin is set", () => {
+    const { container } = renderForm();
+    expect(field(container, "latitude")).toBeNull();
+  });
+});
+
+describe("draft survives a refresh", () => {
+  function fillEverything(container: HTMLElement) {
+    fillStep1(container);
+    fireEvent.click(field(container, "serviceIds"));
+    fireEvent.click(container.querySelector('input[name="languages"][value="Telugu"]')!);
+    fireEvent.change(field(container, "areasCovered"), { target: { value: "Gajuwaka" } });
+    goToLastStep();
+    fillStep3(container);
+    fireEvent.change(field(container, "address"), { target: { value: "Door No 21-54-31, Gajuwaka" } });
+    fireEvent.click(field(container, "addressIsPublic"));
+  }
+
+  it("restores every field, the pin and the step after a reload", () => {
+    const first = renderForm();
+    fillEverything(first.container);
+    cleanup(); // the page goes away
+
+    const { container } = renderForm(); // and comes back
+    expect(field(container, "name").value).toBe("Asha Health Care");
+    expect(field(container, "description").value).toMatch(/^Old age home/);
+    expect((field(container, "cityId") as unknown as HTMLSelectElement).value).toBe("bc23fbfc-3788-47af-a2e5-f4ea4d0325f0");
+    expect(field(container, "serviceIds").checked).toBe(true);
+    expect((container.querySelector('input[name="languages"][value="Telugu"]') as HTMLInputElement).checked).toBe(true);
+    expect(field(container, "areasCovered").value).toBe("Gajuwaka");
+    expect(field(container, "phone").value).toBe("+91 90000 10001");
+    expect(field(container, "whatsapp").value).toBe("+91 90000 10001");
+    expect(field(container, "address").value).toBe("Door No 21-54-31, Gajuwaka");
+    expect(field(container, "addressIsPublic").checked).toBe(true);
+    expect(field(container, "location").value).toBe("17.671427, 83.203612");
+    expect(field(container, "latitude").value).toBe("17.671427");
+    expect(stepVisible(container, 2)).toBe(true);
+  });
+
+  it("is not shown to a different account on the same browser", () => {
+    const first = renderForm();
+    fillEverything(first.container);
+    cleanup();
+    const { container } = render(
+      <ProviderRegistrationForm cities={[]} catalogue={[]} defaultEmail="other@example.org" />,
+    );
+    expect(field(container, "name").value).toBe("");
+    expect(field(container, "email").value).toBe("other@example.org");
+  });
+
+  it("REGRESSION: a server-side rejection no longer wipes the form", async () => {
+    registerProvider.mockResolvedValue({
+      error: "Please check the highlighted fields.",
+      fieldErrors: { phone: "Enter a valid mobile number" },
+    });
+    const { container } = renderForm();
+    fillEverything(container);
+
+    await act(async () => fireEvent.click(screen.getByRole("button", { name: "Submit for review" })));
+
+    expect(registerProvider).toHaveBeenCalledTimes(1);
+    expect(screen.getByText("Enter a valid mobile number")).not.toBeNull();
+    expect(field(container, "name").value).toBe("Asha Health Care");
+    expect(field(container, "address").value).toBe("Door No 21-54-31, Gajuwaka");
+    expect(field(container, "serviceIds").checked).toBe(true);
   });
 });

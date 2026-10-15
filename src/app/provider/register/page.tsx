@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { AuthForm } from "@/components/auth-form";
+import { ForgetRegistrationDraft } from "@/components/forget-registration-draft";
 import { ProviderRegistrationForm } from "@/components/provider-registration-form";
 import { getCities, getServiceCatalogue } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
@@ -44,6 +45,7 @@ export default async function ProviderRegisterPage() {
   if (existing) {
     return (
       <div className="mx-auto max-w-2xl px-5 py-16">
+        <ForgetRegistrationDraft />
         <h1 className="text-3xl">You already have a listing</h1>
         <p className="mt-3 text-ink-soft">
           Head to your dashboard to check its status or update the details.

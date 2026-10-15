@@ -1,6 +1,15 @@
 "use client";
 
-import { useActionState, useRef, useState, useTransition, type MouseEvent } from "react";
+import {
+  useActionState,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  useTransition,
+  type FormEvent,
+  type MouseEvent,
+} from "react";
 import { flushSync } from "react-dom";
 
 import { registerProvider, resolveMapsLocation, type ActionState } from "@/app/provider/actions";
@@ -8,6 +17,13 @@ import { Directions, WhatsApp } from "@/components/icons";
 import { LANGUAGES, PRICING_BANDS, PRICING_BAND_LABEL, STAFF_SIZES } from "@/lib/domain";
 import type { City } from "@/lib/database.types";
 import { mapsSearchUrl, parseLocation, type Coordinates } from "@/lib/location";
+import {
+  DRAFT_CHECKBOX_FIELDS,
+  DRAFT_VALUE_FIELDS,
+  readDraft,
+  writeDraft,
+  type RegistrationDraft,
+} from "@/lib/registration-draft";
 import { firstStepWithError, REGISTRATION_STEPS } from "@/lib/registration-steps";
 import type { CategoryWithServices } from "@/lib/queries";
 
@@ -39,21 +55,43 @@ function controlLabel(control: Control) {
   return title?.trim() || control.labels?.[0]?.textContent?.trim() || "A required field";
 }
 
-export function ProviderRegistrationForm({
-  cities,
-  catalogue,
-  defaultEmail,
-}: {
+type FormProps = {
   cities: City[];
   catalogue: CategoryWithServices[];
   defaultEmail: string;
-}) {
-  const [step, setStep] = useState(0);
+};
+
+const noSubscription = () => () => {};
+
+/**
+ * The saved draft only exists in the browser, so the form is rendered there:
+ * fields can then start from the draft instead of flashing empty and being
+ * refilled after hydration.
+ */
+export function ProviderRegistrationForm(props: FormProps) {
+  const inBrowser = useSyncExternalStore(noSubscription, () => true, () => false);
+  if (!inBrowser) {
+    return <p className="py-16 text-center text-sm text-ink-faint">Loading the form…</p>;
+  }
+  return <RegistrationForm {...props} draft={readDraft(props.defaultEmail)} />;
+}
+
+function RegistrationForm({
+  cities,
+  catalogue,
+  defaultEmail,
+  draft,
+}: FormProps & { draft: RegistrationDraft | null }) {
+  const [step, setStep] = useState(draft?.step ?? 0);
   const [state, formAction, pending] = useActionState<ActionState, FormData>(
     registerProvider,
     {},
   );
+  const [, startSubmitting] = useTransition();
+  const formRef = useRef<HTMLFormElement>(null);
   const stepRefs = useRef<(HTMLFieldSetElement | null)[]>([]);
+  const saved = (name: string) => draft?.values[name];
+  const wasChecked = (name: string, value: string) => draft?.checked[name]?.includes(value);
 
   /* A server-side error may belong to a step that is currently hidden — a
      "Please check the highlighted fields" banner with nothing highlighted on
@@ -110,15 +148,15 @@ export function ProviderRegistrationForm({
      box is ticked by default and the second number simply mirrors the first.
      The ones who run a separate WhatsApp line untick it — but nobody has to
      type ten digits twice to describe the common case. */
-  const [phone, setPhone] = useState("");
-  const [sameWhatsapp, setSameWhatsapp] = useState(true);
-  const [whatsapp, setWhatsapp] = useState("");
+  const [phone, setPhone] = useState(draft?.phone ?? "");
+  const [sameWhatsapp, setSameWhatsapp] = useState(draft?.sameWhatsapp ?? true);
+  const [whatsapp, setWhatsapp] = useState(draft?.whatsapp ?? "");
 
   /* The location text is the single source of truth: the GPS button writes
      coordinates into it, and pasting a link or coordinates fills it directly.
      `coords` is what that text resolved to. */
-  const [locationText, setLocationText] = useState("");
-  const [coords, setCoords] = useState<Coordinates | null>(null);
+  const [locationText, setLocationText] = useState(draft?.location ?? "");
+  const [coords, setCoords] = useState<Coordinates | null>(draft?.coords ?? null);
   const [locating, setLocating] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [resolving, startResolving] = useTransition();
@@ -189,13 +227,64 @@ export function ProviderRegistrationForm({
     );
   }
 
+  /** Snapshots every field into the browser draft. */
+  function saveDraft() {
+    const form = formRef.current;
+    if (!form) return;
+    const values: Record<string, string> = {};
+    for (const name of DRAFT_VALUE_FIELDS) {
+      const control = form.elements.namedItem(name) as Control | null;
+      if (control) values[name] = control.value;
+    }
+    const checked: Record<string, string[]> = {};
+    for (const name of DRAFT_CHECKBOX_FIELDS) {
+      checked[name] = Array.from(
+        form.querySelectorAll<HTMLInputElement>(`input[type="checkbox"][name="${name}"]:checked`),
+        (box) => box.value,
+      );
+    }
+    writeDraft({
+      owner: defaultEmail,
+      values,
+      checked,
+      phone,
+      whatsapp,
+      sameWhatsapp,
+      location: locationText,
+      coords,
+      step,
+      savedAt: Date.now(),
+    });
+  }
+
+  // Typed fields save from the form's onChange; this catches the rest of the
+  // state (step, pin, phone mirroring) after every render.
+  useEffect(saveDraft);
+
+  /* Submitted by hand rather than through <form action>: React resets an
+     action form's fields once the action returns — even when it returns
+     validation errors — which wiped everything the provider had typed. */
+  function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    startSubmitting(() => formAction(data));
+  }
+
   const error = (field: string) =>
     state.fieldErrors?.[field] && (
       <span className="mt-1 block text-xs text-danger-500">{state.fieldErrors[field]}</span>
     );
 
   return (
-    <form action={formAction} onChange={() => setBlocked(null)} className="space-y-8">
+    <form
+      ref={formRef}
+      onSubmit={submit}
+      onChange={() => {
+        setBlocked(null);
+        saveDraft();
+      }}
+      className="space-y-8"
+    >
       <ol className="flex flex-wrap gap-x-6 gap-y-2 border-b border-line pb-4 text-sm">
         {STEPS.map((label, index) => (
           <li
@@ -218,7 +307,7 @@ export function ProviderRegistrationForm({
       >
         <label className="block">
           <span className="mb-1.5 block text-sm font-medium">Organisation name</span>
-          <input name="name" className={fieldClass} required />
+          <input name="name" defaultValue={saved("name")} className={fieldClass} required />
           {error("name")}
         </label>
 
@@ -227,14 +316,14 @@ export function ProviderRegistrationForm({
             Describe your service
             <span className="ms-2 font-normal text-ink-faint">up to 500 characters</span>
           </span>
-          <textarea name="description" rows={4} maxLength={500} className={fieldClass} required />
+          <textarea name="description" defaultValue={saved("description")} rows={4} maxLength={500} className={fieldClass} required />
           {error("description")}
         </label>
 
         <div className="grid gap-4 sm:grid-cols-3">
           <label className="block">
             <span className="mb-1.5 block text-sm font-medium">City</span>
-            <select name="cityId" className={fieldClass} defaultValue="" required>
+            <select name="cityId" className={fieldClass} defaultValue={saved("cityId") ?? ""} required>
               <option value="" disabled>
                 Choose a city
               </option>
@@ -249,13 +338,13 @@ export function ProviderRegistrationForm({
 
           <label className="block">
             <span className="mb-1.5 block text-sm font-medium">Operating since</span>
-            <input name="establishedYear" type="number" min={1900} max={new Date().getFullYear()} className={fieldClass} />
+            <input name="establishedYear" defaultValue={saved("establishedYear")} type="number" min={1900} max={new Date().getFullYear()} className={fieldClass} />
             {error("establishedYear")}
           </label>
 
           <label className="block">
             <span className="mb-1.5 block text-sm font-medium">Team size</span>
-            <select name="staffSize" className={fieldClass} defaultValue="">
+            <select name="staffSize" className={fieldClass} defaultValue={saved("staffSize") ?? ""}>
               <option value="">Prefer not to say</option>
               {STAFF_SIZES.map((size) => (
                 <option key={size} value={size}>
@@ -288,7 +377,7 @@ export function ProviderRegistrationForm({
                       key={service.id}
                       className="flex cursor-pointer items-center gap-2 rounded-full border border-line bg-surface px-3 py-1.5 text-sm has-checked:border-brand-600 has-checked:bg-brand-50"
                     >
-                      <input type="checkbox" name="serviceIds" value={service.id} className="accent-brand-600" />
+                      <input type="checkbox" name="serviceIds" value={service.id} defaultChecked={wasChecked("serviceIds", service.id)} className="accent-brand-600" />
                       {service.name}
                     </label>
                   ))}
@@ -304,7 +393,7 @@ export function ProviderRegistrationForm({
             Areas you cover
             <span className="ms-2 font-normal text-ink-faint">comma separated</span>
           </span>
-          <input name="areasCovered" className={fieldClass} placeholder="MVP Colony, Seethammadhara, Dwaraka Nagar" />
+          <input name="areasCovered" defaultValue={saved("areasCovered")} className={fieldClass} placeholder="MVP Colony, Seethammadhara, Dwaraka Nagar" />
           {error("areasCovered")}
         </label>
 
@@ -316,7 +405,7 @@ export function ProviderRegistrationForm({
                 key={language}
                 className="flex cursor-pointer items-center gap-2 rounded-full border border-line bg-surface px-3 py-1.5 text-sm has-checked:border-brand-600 has-checked:bg-brand-50"
               >
-                <input type="checkbox" name="languages" value={language} className="accent-brand-600" />
+                <input type="checkbox" name="languages" value={language} defaultChecked={wasChecked("languages", language)} className="accent-brand-600" />
                 {language}
               </label>
             ))}
@@ -325,7 +414,7 @@ export function ProviderRegistrationForm({
 
         <label className="block max-w-xs">
           <span className="mb-1.5 block text-sm font-medium">Typical pricing</span>
-          <select name="pricingBand" className={fieldClass} defaultValue="">
+          <select name="pricingBand" className={fieldClass} defaultValue={saved("pricingBand") ?? ""}>
             <option value="">Prefer not to say</option>
             {PRICING_BANDS.map((band) => (
               <option key={band} value={band}>
@@ -396,24 +485,24 @@ export function ProviderRegistrationForm({
 
         <label className="block sm:max-w-sm">
           <span className="mb-1.5 block text-sm font-medium">Contact email</span>
-          <input name="email" type="email" defaultValue={defaultEmail} className={fieldClass} required />
+          <input name="email" type="email" defaultValue={saved("email") ?? defaultEmail} className={fieldClass} required />
           {error("email")}
         </label>
 
         <label className="block">
           <span className="mb-1.5 block text-sm font-medium">Website</span>
-          <input name="website" type="url" className={fieldClass} placeholder="https://" />
+          <input name="website" type="url" defaultValue={saved("website")} className={fieldClass} placeholder="https://" />
           {error("website")}
         </label>
 
         <label className="block">
           <span className="mb-1.5 block text-sm font-medium">Address</span>
-          <textarea name="address" rows={2} maxLength={300} className={fieldClass} />
+          <textarea name="address" defaultValue={saved("address")} rows={2} maxLength={300} className={fieldClass} />
           {error("address")}
         </label>
 
         <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" name="addressIsPublic" className="accent-brand-600" />
+          <input type="checkbox" name="addressIsPublic" defaultChecked={wasChecked("addressIsPublic", "on")} className="accent-brand-600" />
           Show this address on my public profile
         </label>
 
