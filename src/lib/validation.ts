@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { coordinatesProblem } from "@/lib/location";
 import {
   LANGUAGES,
   MOBILITY_LEVELS,
@@ -18,7 +19,34 @@ const phone = z
   .max(20)
   .regex(/^(\+?91[\s-]?)?[6-9]\d{4}[\s-]?\d{5}$/, "Enter a valid mobile number");
 
-/** Same shape as `phone`, but a listing may simply not have a WhatsApp line. */
+/** Digits left once +91 / 91 / a trunk 0 and separators are stripped. */
+function nationalDigits(value: string) {
+  const digits = value.replace(/[\s\-().]/g, "");
+  if (!/^\+?\d+$/.test(digits)) return null;
+  const bare = digits.replace(/^\+/, "");
+  if (bare.length === 12 && bare.startsWith("91")) return bare.slice(2);
+  if (bare.length === 11 && bare.startsWith("0")) return bare.slice(1);
+  return digits.startsWith("+") ? null : bare;
+}
+
+const isMobile = (value: string) => /^[6-9]\d{9}$/.test(nationalDigits(value) ?? "");
+
+/**
+ * A listing's contact number. Unlike a family's number this is often a
+ * landline — a care home answers on 0891 2xxxxxx — so an STD-coded fixed line
+ * is accepted as well as a mobile.
+ */
+const providerPhone = z
+  .string()
+  .trim()
+  .min(10, "Enter a phone number families can reach you on")
+  .max(20)
+  .refine(
+    (v) => /^[1-9]\d{9}$/.test(nationalDigits(v) ?? ""),
+    "Enter a 10-digit mobile, or a landline with its STD code",
+  );
+
+/** WhatsApp only runs on mobiles, and a listing may simply not have one. */
 const optionalPhone = z
   .string()
   .trim()
@@ -26,20 +54,17 @@ const optionalPhone = z
   .or(z.literal(""))
   .transform((v) => v || undefined)
   .refine(
-    (v) => v === undefined || /^(\+?91[\s-]?)?[6-9]\d{4}[\s-]?\d{5}$/.test(v),
+    (v) => v === undefined || isMobile(v),
     "Enter a valid mobile number, or leave this blank",
   );
 
-/** A map pin arrives from the browser's geolocation API, so it is a string in
- *  the form data and empty when the provider declined to share it. */
+/** A map pin arrives as form text and is empty when the provider skipped it.
+ *  Blank must stay blank: coercing "" gives 0, a pin in the Atlantic. */
 const optionalCoordinate = (max: number) =>
-  z.coerce
-    .number()
-    .min(-max)
-    .max(max)
-    .optional()
-    .or(z.literal(""))
-    .transform((v) => (v === "" || v === undefined ? undefined : Number(v)));
+  z.preprocess(
+    (v) => (v === "" || v === null || v === undefined ? undefined : v),
+    z.coerce.number("Enter a number").min(-max).max(max).optional(),
+  );
 
 const optionalText = (max: number) =>
   z.string().trim().max(max).optional().or(z.literal("")).transform((v) => v || undefined);
@@ -122,7 +147,7 @@ export const providerRegistrationSchema = z.object({
   serviceIds: z.array(z.uuid()).min(1, "Select at least one service you offer"),
   areasCovered: z.array(z.string().trim().min(1).max(80)).max(20).default([]),
   languages: z.array(z.enum(LANGUAGES)).max(12).default([]),
-  phone,
+  phone: providerPhone,
   whatsapp: optionalPhone,
   email: z.email("Enter a valid contact email"),
   website: z.url("Enter a valid URL").optional().or(z.literal("")).transform((v) => v || undefined),
@@ -138,10 +163,15 @@ export const providerRegistrationSchema = z.object({
     .max(new Date().getFullYear())
     .optional(),
   staffSize: z.enum(STAFF_SIZES).optional(),
-}).refine(
-  (input) => (input.latitude === undefined) === (input.longitude === undefined),
-  { message: "Drop the pin again — we only got half of it", path: ["latitude"] },
-);
+}).superRefine((input, ctx) => {
+  if ((input.latitude === undefined) !== (input.longitude === undefined)) {
+    ctx.addIssue({ code: "custom", message: "Set the pin again — we only got half of it", path: ["location"] });
+    return;
+  }
+  if (input.latitude === undefined || input.longitude === undefined) return;
+  const problem = coordinatesProblem(input.latitude, input.longitude);
+  if (problem) ctx.addIssue({ code: "custom", message: problem, path: ["location"] });
+});
 
 export type ProviderRegistrationInput = z.infer<typeof providerRegistrationSchema>;
 

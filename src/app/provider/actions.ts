@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { parseLocation, resolveShortLink, type Coordinates } from "@/lib/location";
 import { OAUTH_PROVIDERS } from "@/lib/oauth";
 import { requestOrigin } from "@/lib/site-url";
 import { createClient } from "@/lib/supabase/server";
@@ -140,6 +141,30 @@ export async function registerProvider(
 
   if (!user) return { error: "Please sign in again." };
 
+  /* The form resolves the pasted location to hidden latitude/longitude fields
+     as the provider types. If those are missing — JavaScript still resolving,
+     or disabled — read the pin from the pasted text here, so a location the
+     provider gave us is never silently dropped. */
+  let latitude = String(formData.get("latitude") ?? "");
+  let longitude = String(formData.get("longitude") ?? "");
+  if (!latitude && !longitude) {
+    let located = parseLocation(String(formData.get("location") ?? ""));
+    if (located.kind === "short-link") located = await resolveShortLink(located.url);
+    if (located.kind === "invalid" || located.kind === "short-link") {
+      return {
+        error: "Please check the highlighted fields.",
+        fieldErrors: {
+          location:
+            located.kind === "invalid" ? located.message : "We couldn't read that location.",
+        },
+      };
+    }
+    if (located.kind === "coordinates") {
+      latitude = String(located.coordinates.latitude);
+      longitude = String(located.coordinates.longitude);
+    }
+  }
+
   const parsed = providerRegistrationSchema.safeParse({
     name: formData.get("name"),
     description: formData.get("description"),
@@ -156,8 +181,8 @@ export async function registerProvider(
     website: formData.get("website") ?? "",
     address: formData.get("address") ?? "",
     addressIsPublic: formData.get("addressIsPublic") === "on",
-    latitude: formData.get("latitude") ?? "",
-    longitude: formData.get("longitude") ?? "",
+    latitude,
+    longitude,
     pricingBand: formData.get("pricingBand") || undefined,
     establishedYear: formData.get("establishedYear") || undefined,
     staffSize: formData.get("staffSize") || undefined,
@@ -207,22 +232,57 @@ export async function registerProvider(
     .single();
 
   if (providerError || !provider) {
-    return { error: providerError?.message ?? "We couldn't save your listing." };
+    console.error("registerProvider: provider insert failed", providerError);
+    return {
+      error:
+        "We couldn't save your listing just now. Nothing was submitted — please try again in a minute.",
+    };
   }
 
-  await supabase
+  /* The listing row exists from here on, so a failure below must not send the
+     provider back to a form that will now tell them they already have one.
+     Log it for the team to repair and carry on to the dashboard. */
+  const { error: servicesError } = await supabase
     .from("provider_services")
     .insert(input.serviceIds.map((serviceId) => ({
       provider_id: provider.id,
       service_id: serviceId,
     })));
+  if (servicesError) {
+    console.error("registerProvider: services insert failed", provider.id, servicesError);
+  }
 
-  await supabase.from("provider_applications").insert({
+  const { error: applicationError } = await supabase.from("provider_applications").insert({
     provider_id: provider.id,
     submitted_by: user.id,
     status: "submitted",
   });
+  if (applicationError) {
+    console.error("registerProvider: application insert failed", provider.id, applicationError);
+  }
 
   revalidatePath("/provider/dashboard");
   redirect("/provider/dashboard");
+}
+
+export type LocationLookup = { coordinates?: Coordinates; error?: string };
+
+/**
+ * Turns a maps.app.goo.gl share link into coordinates for the registration
+ * form. Signed-in providers only, so the redirect follower can't be used as
+ * an anonymous proxy.
+ */
+export async function resolveMapsLocation(link: string): Promise<LocationLookup> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Please sign in again." };
+
+  const parsed = parseLocation(typeof link === "string" ? link : "");
+  const located = parsed.kind === "short-link" ? await resolveShortLink(parsed.url) : parsed;
+
+  if (located.kind === "coordinates") return { coordinates: located.coordinates };
+  if (located.kind === "invalid") return { error: located.message };
+  return { error: "We couldn't read that location." };
 }
