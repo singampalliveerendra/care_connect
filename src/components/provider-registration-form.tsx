@@ -15,6 +15,30 @@ const fieldClass = "w-full rounded-card border border-line bg-surface px-3 py-2.
 
 const STEPS = REGISTRATION_STEPS;
 
+type Control = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
+
+/**
+ * The first field in a step the browser would refuse to submit.
+ *
+ * Asked of each control, not the fieldset: a fieldset is never itself a
+ * candidate for constraint validation, so `fieldset.checkValidity()` returns
+ * true even with an empty required field inside it.
+ */
+function firstInvalidControl(fieldset: HTMLFieldSetElement | null | undefined) {
+  if (!fieldset) return null;
+  for (const element of Array.from(fieldset.elements)) {
+    const control = element as Control;
+    if (control.willValidate && !control.validity.valid) return control;
+  }
+  return null;
+}
+
+/** The field's visible title — the label's first text, without hints or errors. */
+function controlLabel(control: Control) {
+  const title = control.closest("label")?.querySelector("span")?.childNodes[0]?.textContent;
+  return title?.trim() || control.labels?.[0]?.textContent?.trim() || "A required field";
+}
+
 export function ProviderRegistrationForm({
   cities,
   catalogue,
@@ -41,17 +65,27 @@ export function ProviderRegistrationForm({
     if (errorStep !== null) setStep(errorStep);
   }
 
-  /** Shows the browser's own message on the first invalid field of `index`. */
-  function revealInvalid(index: number) {
-    flushSync(() => setStep(index));
-    stepRefs.current[index]?.reportValidity();
+  /* Said in words beside the buttons as well as in the browser's bubble,
+     which is easy to miss and vanishes after a few seconds. */
+  const [blocked, setBlocked] = useState<string | null>(null);
+
+  /** Opens step `index` and points at its invalid field. */
+  function revealInvalid(index: number, control: Control) {
+    flushSync(() => {
+      setStep(index);
+      setBlocked(`Step ${index + 1}, ${STEPS[index]}: ${controlLabel(control)} — ${control.validationMessage}`);
+    });
+    control.focus();
+    control.reportValidity();
   }
 
   function goForward() {
-    if (stepRefs.current[step]?.checkValidity() === false) {
-      stepRefs.current[step]?.reportValidity();
+    const invalid = firstInvalidControl(stepRefs.current[step]);
+    if (invalid) {
+      revealInvalid(step, invalid);
       return;
     }
+    setBlocked(null);
     setStep(step + 1);
   }
 
@@ -61,10 +95,15 @@ export function ProviderRegistrationForm({
      something on step 1 or 2 was missing. Check every step first and open the
      one that needs attention. */
   function checkAllSteps(event: MouseEvent<HTMLButtonElement>) {
-    const invalid = stepRefs.current.findIndex((fieldset) => fieldset?.checkValidity() === false);
-    if (invalid === -1) return;
-    event.preventDefault();
-    revealInvalid(invalid);
+    for (let index = 0; index < STEPS.length; index++) {
+      const invalid = firstInvalidControl(stepRefs.current[index]);
+      if (invalid) {
+        event.preventDefault();
+        revealInvalid(index, invalid);
+        return;
+      }
+    }
+    setBlocked(null);
   }
 
   /* Most small providers answer calls and WhatsApp on the same handset, so the
@@ -156,7 +195,7 @@ export function ProviderRegistrationForm({
     );
 
   return (
-    <form action={formAction} className="space-y-8">
+    <form action={formAction} onChange={() => setBlocked(null)} className="space-y-8">
       <ol className="flex flex-wrap gap-x-6 gap-y-2 border-b border-line pb-4 text-sm">
         {STEPS.map((label, index) => (
           <li
@@ -470,7 +509,13 @@ export function ProviderRegistrationForm({
         </p>
       </fieldset>
 
-      {state.error && (
+      {blocked && (
+        <p role="alert" className="rounded-card bg-danger-100 px-4 py-3 text-sm text-danger-500">
+          {blocked}
+        </p>
+      )}
+
+      {state.error && !blocked && (
         <p role="alert" className="rounded-card bg-danger-100 px-4 py-3 text-sm text-danger-500">
           {state.error}
         </p>
