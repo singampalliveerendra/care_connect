@@ -9,7 +9,7 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: "*",
         allow: "/",
         // Nothing behind provider auth, and no enquiry confirmations, should be crawled.
-        disallow: ["/api/", "/provider/", "/enquiry/"],
+        disallow: ["/api/", "/provider/", "/enquiry/", "/admin"],
       },
     ],
     sitemap: `${base}/sitemap.xml`,

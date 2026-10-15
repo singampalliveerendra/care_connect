@@ -150,7 +150,8 @@ export const providerRegistrationSchema = z.object({
   phone: providerPhone,
   whatsapp: optionalPhone,
   email: z.email("Enter a valid contact email"),
-  website: z.url("Enter a valid URL").optional().or(z.literal("")).transform((v) => v || undefined),
+  // http(s) only: this becomes a link on the public listing and in admin review.
+  website: z.url({ protocol: /^https?$/, error: "Enter a web address starting with https://" }).optional().or(z.literal("")).transform((v) => v || undefined),
   address: optionalText(300),
   addressIsPublic: z.boolean().default(false),
   latitude: optionalCoordinate(90),

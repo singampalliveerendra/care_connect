@@ -25,10 +25,13 @@ export function AuthForm({
   next,
   defaultMode = "signin",
   oauthError,
+  signInOnly = false,
 }: {
   next?: string;
   defaultMode?: AuthMode;
   oauthError?: string;
+  /** Email and password sign-in only — no account creation, no Google. */
+  signInOnly?: boolean;
 }) {
   const [mode, setMode] = useState<AuthMode>(defaultMode);
   const [state, formAction, pending] = useActionState<ActionState, FormData>(authenticate, {});
@@ -39,6 +42,7 @@ export function AuthForm({
 
   return (
     <div>
+      {!signInOnly && (
       <div className="mb-6 flex gap-1 rounded-card bg-surface-alt p-1 text-sm">
         {(["signin", "signup"] as const).map((option) => (
           <button
@@ -54,6 +58,7 @@ export function AuthForm({
           </button>
         ))}
       </div>
+      )}
 
       {oauthError && OAUTH_ERRORS[oauthError] && (
         <p
@@ -64,6 +69,8 @@ export function AuthForm({
         </p>
       )}
 
+      {!signInOnly && (
+      <>
       <form action={signInWithProvider}>
         <input type="hidden" name="provider" value="google" />
         {next && <input type="hidden" name="next" value={next} />}
@@ -81,6 +88,8 @@ export function AuthForm({
         or use your email
         <span className="h-px flex-1 bg-line" />
       </div>
+      </>
+      )}
 
       <form action={formAction} className="space-y-4">
         <input type="hidden" name="mode" value={mode} />

@@ -83,6 +83,8 @@ describe("providerRegistrationSchema — negative", () => {
     [{ serviceIds: [] }, "serviceIds"],
     [{ email: "not-an-email" }, "email"],
     [{ website: "asha.in" }, "website"],
+    [{ website: "javascript:alert(1)" }, "website"],
+    [{ website: "data:text/html,hi" }, "website"],
     [{ establishedYear: "1800" }, "establishedYear"],
     [{ address: "x".repeat(301) }, "address"],
   ])("%j is rejected on %s", (overrides, field) => {

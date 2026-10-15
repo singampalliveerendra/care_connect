@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 import { requestOrigin } from "@/lib/site-url";
+import { ensureProfile } from "@/lib/profiles";
 import { createClient } from "@/lib/supabase/server";
 
 /**
@@ -36,7 +37,7 @@ export async function GET(request: NextRequest) {
 
   // A social sign-in skips the signup form, so the profile row that
   // `signUp` would have written has to be created here instead.
-  await supabase.from("profiles").upsert({ id: data.user.id, role: "provider" });
+  await ensureProfile(supabase, data.user.id);
 
   const { data: listing } = await supabase
     .from("providers")

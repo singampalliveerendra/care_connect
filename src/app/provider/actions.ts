@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 
 import { parseLocation, resolveShortLink, type Coordinates } from "@/lib/location";
 import { OAUTH_PROVIDERS } from "@/lib/oauth";
+import { ensureProfile } from "@/lib/profiles";
 import { requestOrigin } from "@/lib/site-url";
 import { createClient } from "@/lib/supabase/server";
 import { providerRegistrationSchema } from "@/lib/validation";
@@ -23,6 +24,11 @@ export type ActionState = {
    */
   mode?: AuthMode;
 };
+
+/** Only ever land back inside our own portals — never an open redirect. */
+function isPortalPath(path: string) {
+  return /^\/(provider|admin)(\/|$|\?)/.test(path);
+}
 
 function slugify(value: string) {
   return value
@@ -54,7 +60,7 @@ async function signUp(formData: FormData): Promise<ActionState> {
     };
   }
 
-  await supabase.from("profiles").upsert({ id: data.user!.id, role: "provider" });
+  await ensureProfile(supabase, data.user!.id);
   redirect("/provider/register");
 }
 
@@ -70,7 +76,7 @@ async function signIn(formData: FormData): Promise<ActionState> {
     return { mode: "signin", error: "That email and password don't match an account." };
   }
 
-  redirect(next.startsWith("/provider") ? next : "/provider/dashboard");
+  redirect(isPortalPath(next) ? next : "/provider/dashboard");
 }
 
 /**
@@ -198,7 +204,7 @@ export async function registerProvider(
   }
 
   const input = parsed.data;
-  await supabase.from("profiles").upsert({ id: user.id, role: "provider" });
+  await ensureProfile(supabase, user.id);
 
   const slug = `${slugify(input.name)}-${Math.random().toString(36).slice(2, 6)}`;
 

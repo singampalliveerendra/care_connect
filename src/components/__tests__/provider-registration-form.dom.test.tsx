@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
    press Submit. Regression for the bug where Submit did nothing because an
    invalid field sat on a hidden step. */
 
-const registerProvider = vi.fn(async (..._args: unknown[]): Promise<Record<string, unknown>> => ({}));
+const registerProvider = vi.fn<(...args: unknown[]) => Promise<Record<string, unknown>>>();
 vi.mock("@/app/provider/actions", () => ({
   registerProvider: (...args: unknown[]) => registerProvider(...args),
   resolveMapsLocation: vi.fn(),

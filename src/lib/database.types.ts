@@ -171,7 +171,12 @@ export type Database = {
       }>;
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      admin_review_provider: {
+        Args: { p_provider_id: string; p_decision: ProviderStatus; p_notes?: string | null };
+        Returns: ProviderStatus;
+      };
+    };
     Enums: {
       user_role: UserRole;
       provider_status: ProviderStatus;

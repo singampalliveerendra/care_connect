@@ -50,5 +50,16 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // The admin area: signed-out visitors go to its own sign-in page. Whether a
+  // signed-in user is actually an admin is checked by the page and by the
+  // database itself, not here.
+  const inAdmin = pathname === "/admin" || pathname.startsWith("/admin/");
+  if (inAdmin && !pathname.startsWith("/admin/login") && !user) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/admin/login";
+    url.search = "";
+    return NextResponse.redirect(url);
+  }
+
   return response;
 }

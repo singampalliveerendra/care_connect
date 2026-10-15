@@ -10,7 +10,7 @@ const SERVICE = "9f8cc3fd-0554-4c75-9eda-a2a008211f94";
 type Result = { data?: unknown; error?: { message: string } | null };
 const db = {
   user: { id: "user-1", email: "asha@example.org" } as { id: string; email: string } | null,
-  inserts: [] as { table: string; row: unknown }[],
+  inserts: [] as { table: string; row: unknown; options?: unknown }[],
   results: {} as Record<string, Result>,
 };
 
@@ -21,8 +21,8 @@ function from(table: string) {
       db.inserts.push({ table, row });
       return chain;
     },
-    upsert(row: unknown) {
-      db.inserts.push({ table: `${table}:upsert`, row });
+    upsert(row: unknown, options?: unknown) {
+      db.inserts.push({ table: `${table}:upsert`, row, options });
       return chain;
     },
     select: () => chain,
@@ -34,7 +34,10 @@ function from(table: string) {
 
 vi.mock("@/lib/supabase/server", () => ({
   createClient: async () => ({
-    auth: { getUser: async () => ({ data: { user: db.user } }) },
+    auth: {
+      getUser: async () => ({ data: { user: db.user } }),
+      signInWithPassword: async () => ({ error: null }),
+    },
     from,
   }),
 }));
@@ -52,7 +55,7 @@ vi.mock("@/lib/location", async (importOriginal) => ({
   resolveShortLink: (...args: unknown[]) => resolveShortLink(...args),
 }));
 
-const { registerProvider, resolveMapsLocation } = await import("@/app/provider/actions");
+const { authenticate, registerProvider, resolveMapsLocation } = await import("@/app/provider/actions");
 
 function form(overrides: Record<string, string | string[] | null> = {}) {
   const fields: Record<string, string | string[] | null> = {
@@ -122,6 +125,15 @@ describe("registerProvider — success", () => {
       "provider_services",
       "provider_applications",
     ]);
+  });
+
+  it("SECURITY: never writes the role column, and never overwrites an existing profile", async () => {
+    await submit(form());
+    expect(db.inserts.find((insert) => insert.table === "profiles:upsert")).toEqual({
+      table: "profiles:upsert",
+      row: { id: "user-1" },
+      options: { onConflict: "id", ignoreDuplicates: true },
+    });
   });
 
   it("REGRESSION: no location saves null coordinates, not 0, 0", async () => {
@@ -225,5 +237,33 @@ describe("resolveMapsLocation", () => {
   it("returns the parser's message for junk", async () => {
     expect((await resolveMapsLocation("hello")).error).toBeTruthy();
     expect((await resolveMapsLocation(123 as unknown as string)).error).toBeTruthy();
+  });
+});
+
+describe("authenticate — sign-in redirect", () => {
+  const signIn = async (next: string) => {
+    const data = new FormData();
+    data.append("mode", "signin");
+    data.append("email", "admin@carelyindia.com");
+    data.append("password", "x".repeat(12));
+    data.append("next", next);
+    try {
+      await authenticate({}, data);
+      return null;
+    } catch (error) {
+      return (error as { url?: string }).url;
+    }
+  };
+
+  it.each([
+    ["/admin", "/admin"],
+    ["/admin?status=approved", "/admin?status=approved"],
+    ["/provider/leads", "/provider/leads"],
+    ["https://evil.example", "/provider/dashboard"],
+    ["//evil.example", "/provider/dashboard"],
+    ["/administrator-phish", "/provider/dashboard"],
+    ["/", "/provider/dashboard"],
+  ])("next=%s lands on %s", async (next, expected) => {
+    expect(await signIn(next)).toBe(expected);
   });
 });
